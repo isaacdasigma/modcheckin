@@ -53,17 +53,18 @@
       padding: 6px;
       border-radius: 25px;
       border: 1px solid #3a4768;
+      max-width: 500px;
     }
     .nav-btn {
       background: transparent;
       color: #94a3b8;
       border: 0;
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 20px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.15s ease;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
     .nav-btn:active { transform: scale(0.92); }
     .nav-btn.active {
@@ -78,7 +79,7 @@
 
     .status-box { font-weight: bold; margin: 6px 0; color: #38bdf8; text-align: center; min-height: 24px; font-size: 1.05rem; }
 
-    /* Control Selector */
+    /* Controls */
     .mode-selector { display: flex; gap: 8px; margin-bottom: 12px; }
     .mode-btn {
       background: #1c2541; color: white; border: 1px solid #3a4768;
@@ -195,6 +196,57 @@
     }
     .m-tile.blocked { opacity: 0.6; filter: grayscale(40%); cursor: not-allowed; }
 
+    /* GAME 6: CHOMP STYLES */
+    #chomp-board {
+      display: grid; grid-template-columns: repeat(7, 1fr); grid-gap: 6px;
+      width: 380px; height: 280px; background: #1c2541; border: 3px solid #3a4768;
+      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .chomp-tile {
+      background: linear-gradient(145deg, #3b82f6, #002868); border-radius: 6px;
+      display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
+      cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s ease;
+    }
+    .chomp-tile:active { transform: scale(0.92); }
+    .chomp-tile.poison { background: linear-gradient(145deg, #ef4444, #bf0a30) !important; border: 2px solid #fbbf24; }
+    .chomp-tile.eaten { background: transparent !important; box-shadow: none !important; cursor: default; }
+
+    /* GAME 7: PEG SOLITAIRE STYLES */
+    #peg-board {
+      display: grid; grid-template-columns: repeat(7, 1fr); grid-gap: 6px;
+      width: 360px; height: 360px; background: #1c2541; border: 3px solid #3a4768;
+      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .peg-slot {
+      width: 42px; height: 42px; border-radius: 50%; display: flex;
+      justify-content: center; align-items: center; position: relative;
+    }
+    .peg-slot.invalid { visibility: hidden; }
+    .peg-slot.empty { background: #0b132b; border: 2px dashed #3a4768; }
+    .peg-slot.target { background: #059669 !important; border: 2px solid #10b981; cursor: pointer; animation: pulseTarget 0.8s infinite alternate; }
+    .peg {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: radial-gradient(circle, #38bdf8, #002868);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.15s ease;
+    }
+    .peg.selected { outline: 3px solid #f59e0b; transform: scale(1.18); box-shadow: 0 0 12px #f59e0b; }
+
+    /* GAME 8: LIGHTS OUT STYLES */
+    #lights-board {
+      display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 8px;
+      width: 350px; height: 350px; background: #1c2541; border: 3px solid #3a4768;
+      border-radius: 8px; padding: 12px; margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .light-btn {
+      background: #273043; border: 2px solid #3a4768; border-radius: 10px;
+      display: flex; justify-content: center; align-items: center; font-size: 1.8rem;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .light-btn.on {
+      background: radial-gradient(circle, #f59e0b, #bf0a30);
+      border-color: #fbbf24; box-shadow: 0 0 16px rgba(245, 158, 11, 0.8);
+    }
+
     .action-btn {
       background-color: #002868; color: white; border: 1px solid #3b82f6;
       padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;
@@ -255,6 +307,9 @@
     <button class="nav-btn" onclick="switchTab('checkers')">Checkers</button>
     <button class="nav-btn" onclick="switchTab('sudoku')">Sudoku</button>
     <button class="nav-btn" onclick="switchTab('mahjong')">Mahjong</button>
+    <button class="nav-btn" onclick="switchTab('chomp')">Chomp</button>
+    <button class="nav-btn" onclick="switchTab('peg')">Peg Solitaire</button>
+    <button class="nav-btn" onclick="switchTab('lights')">Lights Out</button>
   </div>
 
   <!-- GAME 1: CHECKAWORDS -->
@@ -317,6 +372,27 @@
     </div>
   </div>
 
+  <!-- GAME 6: CHOMP (THE POISON GRID) -->
+  <div id="chomp-view" class="game-view">
+    <div class="status-box" id="chomp-status">Tap a tile to chomp! Avoid the Poison Skull 💀!</div>
+    <div id="chomp-board"></div>
+    <button class="action-btn" onclick="initChomp()">New Chomp Game</button>
+  </div>
+
+  <!-- GAME 7: PEG SOLITAIRE -->
+  <div id="peg-view" class="game-view">
+    <div class="status-box" id="peg-status">Jump pegs to remove them. Leave only 1 peg!</div>
+    <div id="peg-board"></div>
+    <button class="action-btn" onclick="initPeg()">New Peg Solitaire</button>
+  </div>
+
+  <!-- GAME 8: LIGHTS OUT -->
+  <div id="lights-view" class="game-view">
+    <div class="status-box" id="lights-status">Turn off all the glowing stars!</div>
+    <div id="lights-board"></div>
+    <button class="action-btn" onclick="initLights()">New Puzzle</button>
+  </div>
+
   <!-- POPUP RESULT MODAL -->
   <div id="popup-modal" class="modal-overlay">
     <div class="modal-card">
@@ -374,6 +450,18 @@
         document.getElementById('mahjong-view').classList.add('active');
         event.target.classList.add('active');
         if (!mahjongInitialized) initMahjong();
+      } else if (gameKey === 'chomp') {
+        document.getElementById('chomp-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!chompInitialized) initChomp();
+      } else if (gameKey === 'peg') {
+        document.getElementById('peg-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!pegInitialized) initPeg();
+      } else if (gameKey === 'lights') {
+        document.getElementById('lights-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!lightsInitialized) initLights();
       }
     }
 
@@ -765,12 +853,11 @@
 
     function inputSudokuNum(num) {
       if (selectedSudokuCell === null) return;
-      if (sudokuPuzzle[selectedSudokuCell] !== 0) return; // Fixed given number
+      if (sudokuPuzzle[selectedSudokuCell] !== 0) return;
 
       playerSudoku[selectedSudokuCell] = num;
       renderSudoku();
 
-      // Win check
       if (!playerSudoku.includes(0)) {
         if (playerSudoku.every((val, idx) => val === sudokuSolution[idx])) {
           showPopup('🧩 Sudoku Solved!', 'You successfully finished the board!', initSudoku);
@@ -779,14 +866,6 @@
         }
       }
     }
-
-    // Keyboard support for Sudoku
-    document.addEventListener('keydown', (e) => {
-      if (document.getElementById('sudoku-view').classList.contains('active')) {
-        if (e.key >= '1' && e.key <= '9') inputSudokuNum(parseInt(e.key));
-        else if (e.key === 'Backspace' || e.key === 'Delete') inputSudokuNum(0);
-      }
-    });
 
     // -------------------------------------------------------------
     // 5. MAHJONG SOLITAIRE ENGINE
@@ -802,35 +881,25 @@
       selectedMahjongTile = null;
       document.getElementById('mahjong-status').textContent = 'Tap matching free tiles to clear the board!';
       
-      // Layout generation: 3 layers, total 48 tiles (24 matching pairs)
       const layout = [
-        // Layer 0 (Bottom) 6x6
         {l:0, r:1, c:1}, {l:0, r:1, c:2}, {l:0, r:1, c:3}, {l:0, r:1, c:4}, {l:0, r:1, c:5}, {l:0, r:1, c:6},
         {l:0, r:2, c:1}, {l:0, r:2, c:2}, {l:0, r:2, c:3}, {l:0, r:2, c:4}, {l:0, r:2, c:5}, {l:0, r:2, c:6},
         {l:0, r:3, c:1}, {l:0, r:3, c:2}, {l:0, r:3, c:3}, {l:0, r:3, c:4}, {l:0, r:3, c:5}, {l:0, r:3, c:6},
         {l:0, r:4, c:1}, {l:0, r:4, c:2}, {l:0, r:4, c:3}, {l:0, r:4, c:4}, {l:0, r:4, c:5}, {l:0, r:4, c:6},
-        // Layer 1 (Middle) 4x4
         {l:1, r:1.5, c:2}, {l:1, r:1.5, c:3}, {l:1, r:1.5, c:4}, {l:1, r:1.5, c:5},
         {l:1, r:2.5, c:2}, {l:1, r:2.5, c:3}, {l:1, r:2.5, c:4}, {l:1, r:2.5, c:5},
         {l:1, r:3.5, c:2}, {l:1, r:3.5, c:3}, {l:1, r:3.5, c:4}, {l:1, r:3.5, c:5},
-        // Layer 2 (Top) 2x4
         {l:2, r:2, c:2.5}, {l:2, r:2, c:3.5}, {l:2, r:2, c:4.5},
         {l:2, r:3, c:2.5}, {l:2, r:3, c:3.5}, {l:2, r:3, c:4.5},
         {l:2, r:2.5, c:3}, {l:2, r:2.5, c:4}
       ];
 
-      // Assign pairs
       let deck = [];
-      MAHJONG_SYMBOLS.forEach(sym => deck.push(sym, sym, sym, sym)); // 12 * 4 = 48
+      MAHJONG_SYMBOLS.forEach(sym => deck.push(sym, sym, sym, sym));
       deck.sort(() => Math.random() - 0.5);
 
       mahjongTiles = layout.map((pos, i) => ({
-        id: i,
-        symbol: deck[i],
-        l: pos.l,
-        r: pos.r,
-        c: pos.c,
-        matched: false
+        id: i, symbol: deck[i], l: pos.l, r: pos.r, c: pos.c, matched: false
       }));
 
       renderMahjong();
@@ -838,38 +907,28 @@
 
     function isTileFree(t) {
       if (t.matched) return false;
-      
-      // Covered by a higher layer?
       const covered = mahjongTiles.some(other => 
         !other.matched && other.l > t.l && Math.abs(other.r - t.r) < 0.9 && Math.abs(other.c - t.c) < 0.9
       );
       if (covered) return false;
-
-      // Check left or right blocked on same layer
       const leftBlocked = mahjongTiles.some(other => !other.matched && other.l === t.l && Math.abs(other.r - t.r) < 0.8 && (t.c - other.c > 0.5 && t.c - other.c < 1.2));
       const rightBlocked = mahjongTiles.some(other => !other.matched && other.l === t.l && Math.abs(other.r - t.r) < 0.8 && (other.c - t.c > 0.5 && other.c - t.c < 1.2));
-
       return !leftBlocked || !rightBlocked;
     }
 
     function renderMahjong() {
       const boardEl = document.getElementById('mahjong-board');
       boardEl.innerHTML = '';
-
       mahjongTiles.forEach(t => {
         if (t.matched) return;
-
         const tileEl = document.createElement('div');
         tileEl.className = 'm-tile';
-        const free = isTileFree(t);
-        if (!free) tileEl.classList.add('blocked');
+        if (!isTileFree(t)) tileEl.classList.add('blocked');
         if (selectedMahjongTile && selectedMahjongTile.id === t.id) tileEl.classList.add('selected');
-
         tileEl.style.left = `${t.c * 50 + t.l * 3}px`;
         tileEl.style.top = `${t.r * 58 - t.l * 3}px`;
         tileEl.style.zIndex = t.l * 10 + Math.floor(t.r);
         tileEl.textContent = t.symbol;
-
         tileEl.addEventListener('click', () => handleMahjongClick(t));
         boardEl.appendChild(tileEl);
       });
@@ -877,23 +936,19 @@
 
     function handleMahjongClick(t) {
       if (!isTileFree(t)) return;
-
       if (!selectedMahjongTile) {
         selectedMahjongTile = t;
       } else if (selectedMahjongTile.id === t.id) {
-        selectedMahjongTile = null; // Deselect
+        selectedMahjongTile = null;
       } else if (selectedMahjongTile.symbol === t.symbol) {
-        // Match found!
         t.matched = true;
         selectedMahjongTile.matched = true;
         selectedMahjongTile = null;
-
-        // Check Win
         if (mahjongTiles.every(tile => tile.matched)) {
           showPopup('🀄 Mahjong Master!', 'You cleared all tiles!', initMahjong);
         }
       } else {
-        selectedMahjongTile = t; // Switch selection
+        selectedMahjongTile = t;
       }
       renderMahjong();
     }
@@ -907,7 +962,244 @@
     }
 
     // -------------------------------------------------------------
-    // 6. CHECKAWORDS (WORDLE) LOGIC
+    // 6. NEW GAME: CHOMP (THE POISON GRID)
+    // -------------------------------------------------------------
+    let chompInitialized = false;
+    let chompState = []; // 4 rows x 7 cols matrix
+    let chompTurn = 'player';
+
+    function initChomp() {
+      chompInitialized = true;
+      chompTurn = 'player';
+      document.getElementById('chomp-status').textContent = 'Your turn! Tap a tile to chomp!';
+      chompState = Array(4).fill(null).map(() => Array(7).fill(true));
+      renderChomp();
+    }
+
+    function renderChomp() {
+      const board = document.getElementById('chomp-board');
+      board.innerHTML = '';
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 7; c++) {
+          const tile = document.createElement('div');
+          tile.className = 'chomp-tile';
+          if (!chompState[r][c]) tile.classList.add('eaten');
+          if (r === 0 && c === 0) {
+            tile.classList.add('poison');
+            tile.textContent = '💀';
+          } else if (chompState[r][c]) {
+            tile.textContent = '🍫';
+          }
+          tile.addEventListener('click', () => handleChompClick(r, c));
+          board.appendChild(tile);
+        }
+      }
+    }
+
+    function handleChompClick(r, c) {
+      if (chompTurn !== 'player' || !chompState[r][c]) return;
+
+      if (r === 0 && c === 0) {
+        showPopup('💀 Poison Eaten!', 'You ate the poison tile! CPU wins!', initChomp);
+        return;
+      }
+
+      executeChomp(r, c);
+      renderChomp();
+
+      chompTurn = 'cpu';
+      document.getElementById('chomp-status').textContent = 'CPU is thinking...';
+      setTimeout(makeChompCPUMove, 500);
+    }
+
+    function executeChomp(row, col) {
+      for (let r = row; r < 4; r++) {
+        for (let c = col; c < 7; c++) {
+          chompState[r][c] = false;
+        }
+      }
+    }
+
+    function makeChompCPUMove() {
+      let availableMoves = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 7; c++) {
+          if (chompState[r][c] && !(r === 0 && c === 0)) {
+            availableMoves.push({ r, c });
+          }
+        }
+      }
+
+      if (availableMoves.length === 0) {
+        showPopup('🎉 Victory!', 'CPU was forced to eat the poison skull!', initChomp);
+        return;
+      }
+
+      // CPU heuristic: pick smart move if possible
+      let chosen = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+      executeChomp(chosen.r, chosen.c);
+      renderChomp();
+
+      chompTurn = 'player';
+      document.getElementById('chomp-status').textContent = 'Your turn! Tap a tile to chomp!';
+    }
+
+    // -------------------------------------------------------------
+    // 7. NEW GAME: PEG SOLITAIRE
+    // -------------------------------------------------------------
+    let pegInitialized = false;
+    let pegState = []; // 7x7 matrix
+    let selectedPeg = null;
+    let pegTargets = [];
+
+    // English cross layout pattern (1: peg, 0: empty, -1: invalid slot)
+    const PEG_BOARD_LAYOUT = [
+      [-1, -1,  1,  1,  1, -1, -1],
+      [-1, -1,  1,  1,  1, -1, -1],
+      [ 1,  1,  1,  1,  1,  1,  1],
+      [ 1,  1,  1,  0,  1,  1,  1],
+      [ 1,  1,  1,  1,  1,  1,  1],
+      [-1, -1,  1,  1,  1, -1, -1],
+      [-1, -1,  1,  1,  1, -1, -1]
+    ];
+
+    function initPeg() {
+      pegInitialized = true;
+      selectedPeg = null;
+      pegTargets = [];
+      document.getElementById('peg-status').textContent = 'Jump pegs to remove them. Goal: Leave 1 peg!';
+      pegState = PEG_BOARD_LAYOUT.map(row => [...row]);
+      renderPegBoard();
+    }
+
+    function renderPegBoard() {
+      const board = document.getElementById('peg-board');
+      board.innerHTML = '';
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+          const slot = document.createElement('div');
+          slot.className = 'peg-slot';
+
+          if (pegState[r][c] === -1) {
+            slot.classList.add('invalid');
+          } else if (pegState[r][c] === 0) {
+            slot.classList.add('empty');
+            if (pegTargets.some(t => t.r === r && t.c === c)) {
+              slot.classList.add('target');
+              slot.addEventListener('click', () => makePegJump(r, c));
+            }
+          } else if (pegState[r][c] === 1) {
+            const peg = document.createElement('div');
+            peg.className = 'peg';
+            if (selectedPeg && selectedPeg.r === r && selectedPeg.c === c) peg.classList.add('selected');
+            peg.addEventListener('click', () => selectPeg(r, c));
+            slot.appendChild(peg);
+          }
+          board.appendChild(slot);
+        }
+      }
+    }
+
+    function selectPeg(r, c) {
+      selectedPeg = { r, c };
+      pegTargets = [];
+      const dirs = [[-2,0], [2,0], [0,-2], [0,2]];
+
+      dirs.forEach(([dr, dc]) => {
+        const tr = r + dr, tc = c + dc;
+        const mr = r + dr/2, mc = c + dc/2;
+        if (tr >= 0 && tr < 7 && tc >= 0 && tc < 7) {
+          if (pegState[tr][tc] === 0 && pegState[mr][mc] === 1) {
+            pegTargets.push({ r: tr, c: tc, mr, mc });
+          }
+        }
+      });
+      renderPegBoard();
+    }
+
+    function makePegJump(tr, tc) {
+      if (!selectedPeg) return;
+      const target = pegTargets.find(t => t.r === tr && t.c === tc);
+      if (!target) return;
+
+      pegState[selectedPeg.r][selectedPeg.c] = 0;
+      pegState[target.mr][target.mc] = 0;
+      pegState[tr][tc] = 1;
+
+      selectedPeg = null;
+      pegTargets = [];
+      renderPegBoard();
+
+      // Check remaining pegs
+      let count = 0;
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+          if (pegState[r][c] === 1) count++;
+        }
+      }
+
+      if (count === 1) {
+        showPopup('⭐ Genius!', 'You cleared the board with 1 peg left!', initPeg);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 8. NEW GAME: LIGHTS OUT PUZZLE
+    // -------------------------------------------------------------
+    let lightsInitialized = false;
+    let lightsState = []; // 5x5 grid
+
+    function initLights() {
+      lightsInitialized = true;
+      document.getElementById('lights-status').textContent = 'Turn off all the glowing stars!';
+      lightsState = Array(5).fill(null).map(() => Array(5).fill(false));
+
+      // Generate solvable puzzle by toggling random cells
+      for (let i = 0; i < 10; i++) {
+        const r = Math.floor(Math.random() * 5);
+        const c = Math.floor(Math.random() * 5);
+        toggleLight(r, c);
+      }
+      renderLights();
+    }
+
+    function toggleLight(r, c) {
+      const dirs = [[0,0], [1,0], [-1,0], [0,1], [0,-1]];
+      dirs.forEach(([dr, dc]) => {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5) {
+          lightsState[nr][nc] = !lightsState[nr][nc];
+        }
+      });
+    }
+
+    function handleLightClick(r, c) {
+      toggleLight(r, c);
+      renderLights();
+
+      // Check win condition
+      const allOff = lightsState.every(row => row.every(val => !val));
+      if (allOff) {
+        showPopup('🌟 Lights Out Solved!', 'You turned off all the stars!', initLights);
+      }
+    }
+
+    function renderLights() {
+      const board = document.getElementById('lights-board');
+      board.innerHTML = '';
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const btn = document.createElement('div');
+          btn.className = `light-btn ${lightsState[r][c] ? 'on' : ''}`;
+          btn.textContent = lightsState[r][c] ? '⭐' : '•';
+          btn.addEventListener('click', () => handleLightClick(r, c));
+          board.appendChild(btn);
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 9. CHECKAWORDS (WORDLE) LOGIC
     // -------------------------------------------------------------
     const WORDS = {
       5: ["STARS", "BRAVE", "GLORY", "EAGLE", "VALOR", "PRIDE", "MARCH", "RIGHT", "PEACE", "TRUTH"],
