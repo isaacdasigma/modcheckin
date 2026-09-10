@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkawords - America 250</title>
+  
+  <!-- Chessboard CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0b132b;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+      user-select: none;
+    }
+
+    header { text-align: center; margin-bottom: 8px; }
+    .a250-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #bf0a30 0%, #ffffff 50%, #002868 100%);
+      padding: 2px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+    }
+    .a250-badge-inner {
+      background: #0b132b;
+      color: #ffffff;
+      padding: 4px 14px;
+      border-radius: 18px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    h1 { font-size: 2.1rem; letter-spacing: 2px; text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+    /* Navigation Bar */
+    .game-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 10px 0 15px 0;
+      background: #1c2541;
+      padding: 6px;
+      border-radius: 25px;
+      border: 1px solid #3a4768;
+    }
+    .nav-btn {
+      background: transparent;
+      color: #94a3b8;
+      border: 0;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 0.9rem;
+    }
+    .nav-btn:active { transform: scale(0.92); }
+    .nav-btn.active {
+      background-color: #002868;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+    }
+
+    /* Game View Container */
+    .game-view { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; }
+    .game-view.active { display: flex; }
+
+    .status-box { font-weight: bold; margin: 6px 0; color: #38bdf8; text-align: center; min-height: 24px; font-size: 1.05rem; }
+
+    /* Control Selector */
+    .mode-selector { display: flex; gap: 8px; margin-bottom: 12px; }
+    .mode-btn {
+      background: #1c2541; color: white; border: 1px solid #3a4768;
+      padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold;
+      transition: transform 0.1s ease;
+    }
+    .mode-btn:active { transform: scale(0.92); }
+    .mode-btn.active { background: #bf0a30; border-color: white; box-shadow: 0 0 10px rgba(191,10,48,0.5); }
+
+    /* Wordle Styles */
+    #grid { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 6px; margin-bottom: 12px; }
+    .row { display: grid; grid-gap: 6px; }
+    .tile {
+      width: 50px; height: 50px; border: 2px solid #2a3759; background-color: #1c2541;
+      display: flex; justify-content: center; align-items: center; font-size: 1.7rem;
+      font-weight: 800; text-transform: uppercase; border-radius: 6px;
+      transition: border-color 0.15s ease;
+    }
+    .tile.pop { animation: tilePop 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-color: #38bdf8 !important; }
+    .correct { background-color: #002868 !important; border-color: #3b82f6 !important; }
+    .present { background-color: #bf0a30 !important; border-color: #ef4444 !important; }
+    .absent { background-color: #273043 !important; border-color: #273043 !important; color: #64748b; }
+    
+    #keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 500px; }
+    .keyboard-row { display: flex; justify-content: center; gap: 5px; }
+    .key {
+      background-color: #334155; color: white; border: 0; border-radius: 6px;
+      height: 52px; flex: 1; display: flex; justify-content: center; align-items: center;
+      font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem;
+      transition: transform 0.08s ease, background-color 0.15s ease;
+    }
+    .key:active { transform: scale(0.88); }
+    .key.large { flex: 1.5; font-size: 0.8rem; }
+
+    /* Chessboard */
+    #chess-board { width: 100%; max-width: 420px; margin: 10px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    .highlight-target { position: relative; }
+    .highlight-target::after {
+      content: ""; position: absolute; width: 18px; height: 18px;
+      background-color: rgba(56, 189, 248, 0.75); border-radius: 50%;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px #38bdf8;
+    }
+
+    /* Checkers Board */
+    #checkers-board {
+      width: 400px; height: 400px; display: grid;
+      grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+      border: 4px solid #3a4768; border-radius: 8px; margin: 10px 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .c-cell { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; position: relative; }
+    .c-cell.light { background-color: #cbd5e1; }
+    .c-cell.dark { background-color: #1c2541; }
+    .c-cell.highlight::after {
+      content: ""; width: 16px; height: 16px; background: #059669;
+      border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulseTarget 1s infinite alternate;
+    }
+    .c-cell.highlight { cursor: pointer; }
+    .c-piece {
+      width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .c-piece.selected { outline: 4px solid #f59e0b; transform: scale(1.2); box-shadow: 0 0 16px #f59e0b; z-index: 10; }
+    .c-piece.red { background: radial-gradient(circle, #ef4444, #bf0a30); }
+    .c-piece.blue { background: radial-gradient(circle, #3b82f6, #002868); }
+    .c-piece.king::after { content: "★"; color: #fbbf24; font-size: 20px; display: flex; justify-content: center; line-height: 38px; }
+
+    /* Sudoku Styles */
+    #sudoku-grid {
+      display: grid; grid-template-columns: repeat(9, 1fr);
+      width: 380px; height: 380px; border: 3px solid #38bdf8;
+      border-radius: 8px; overflow: hidden; margin: 10px 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5); background: #1c2541;
+    }
+    .s-cell {
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.3rem; font-weight: bold; background: #1c2541;
+      border: 1px solid #2a3759; cursor: pointer; color: #38bdf8;
+      transition: background 0.1s ease;
+    }
+    .s-cell.given { color: #ffffff; font-weight: 900; background: #131c35; }
+    .s-cell.selected { background: #002868 !important; box-shadow: inset 0 0 8px #3b82f6; }
+    .s-cell.highlighted { background: #273043; }
+    .s-cell.border-r { border-right: 3px solid #38bdf8; }
+    .s-cell.border-b { border-bottom: 3px solid #38bdf8; }
+    
+    .num-pad { display: flex; gap: 6px; margin-top: 10px; width: 100%; max-width: 380px; }
+    .num-btn {
+      flex: 1; height: 45px; background: #334155; color: white; border: 0;
+      border-radius: 6px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
+    }
+    .num-btn:active { transform: scale(0.92); }
+    .num-btn.erase { background: #bf0a30; font-size: 0.8rem; }
+
+    /* Mahjong Styles */
+    #mahjong-board {
+      width: 420px; height: 380px; position: relative;
+      background: #1c2541; border: 3px solid #3a4768; border-radius: 8px;
+      margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden;
+    }
+    .m-tile {
+      position: absolute; width: 44px; height: 56px;
+      background: linear-gradient(145deg, #f8fafc, #cbd5e1);
+      border: 2px solid #94a3b8; border-radius: 6px;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.6rem; cursor: pointer;
+      box-shadow: -2px 3px 0px #64748b, -4px 6px 8px rgba(0,0,0,0.5);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .m-tile.selected {
+      transform: translateY(-6px) scale(1.08);
+      border-color: #f59e0b; box-shadow: 0 0 16px #f59e0b; z-index: 100 !important;
+    }
+    .m-tile.blocked { opacity: 0.6; filter: grayscale(40%); cursor: not-allowed; }
+
+    .action-btn {
+      background-color: #002868; color: white; border: 1px solid #3b82f6;
+      padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;
+      transition: transform 0.1s ease;
+    }
+    .action-btn:active { transform: scale(0.92); }
+
+    /* POPUP OVERLAY MODAL */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(11, 19, 43, 0.85); backdrop-filter: blur(5px);
+      justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .modal-card {
+      background: #1c2541; border: 2px solid #3b82f6; border-radius: 16px;
+      padding: 28px 24px; text-align: center; box-shadow: 0 12px 32px rgba(0,0,0,0.8);
+      max-width: 90%; width: 350px;
+    }
+    .modal-title { font-size: 1.6rem; margin-bottom: 10px; color: #ffffff; }
+    .modal-text { font-size: 1.1rem; color: #cbd5e1; margin-bottom: 20px; }
+    .modal-btn {
+      background: #bf0a30; color: white; border: 0; padding: 12px 24px;
+      border-radius: 25px; font-weight: bold; font-size: 1rem; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(191,10,48,0.5);
+    }
+    .modal-btn:active { transform: scale(0.92); }
+
+    /* Keyframe Animations */
+    @keyframes tilePop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    @keyframes modalPop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulseTarget {
+      0% { transform: scale(0.8); opacity: 0.7; }
+      100% { transform: scale(1.2); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="a250-badge">
+      <div class="a250-badge-inner">★ America 250 ★</div>
+    </div>
+    <h1>CHECKAWORDS</h1>
+  </header>
+
+  <!-- Navigation -->
+  <div class="game-nav">
+    <button class="nav-btn active" onclick="switchTab('wordle')">Checkawords</button>
+    <button class="nav-btn" onclick="switchTab('chess')">Chess</button>
+    <button class="nav-btn" onclick="switchTab('checkers')">Checkers</button>
+    <button class="nav-btn" onclick="switchTab('sudoku')">Sudoku</button>
+    <button class="nav-btn" onclick="switchTab('mahjong')">Mahjong</button>
+  </div>
+
+  <!-- GAME 1: CHECKAWORDS -->
+  <div id="wordle-view" class="game-view active">
+    <div class="mode-selector">
+      <button class="mode-btn" onclick="setWordMode(5)">5 Letters</button>
+      <button class="mode-btn" onclick="setWordMode(6)">6 Letters</button>
+      <button class="mode-btn active" onclick="setWordMode(7)">7 Letters</button>
+    </div>
+    <div class="status-box" id="wordle-msg"></div>
+    <div id="grid"></div>
+    <div id="keyboard"></div>
+  </div>
+
+  <!-- GAME 2: CHESS VS SUPER CPU -->
+  <div id="chess-view" class="game-view">
+    <div class="status-box" id="chess-status">You (White) vs Super CPU (Black)</div>
+    <div id="chess-board"></div>
+    <button class="action-btn" onclick="resetChess()">New Chess Game</button>
+  </div>
+
+  <!-- GAME 3: CHECKERS VS CPU -->
+  <div id="checkers-view" class="game-view">
+    <div class="status-box" id="checkers-status">Your turn! Tap a Blue piece to move.</div>
+    <div id="checkers-board"></div>
+    <button class="action-btn" onclick="initCheckers()">New Checkers Game</button>
+  </div>
+
+  <!-- GAME 4: SUDOKU -->
+  <div id="sudoku-view" class="game-view">
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setSudokuDiff('easy')">Easy</button>
+      <button class="mode-btn" onclick="setSudokuDiff('medium')">Medium</button>
+      <button class="mode-btn" onclick="setSudokuDiff('hard')">Hard</button>
+    </div>
+    <div class="status-box" id="sudoku-status">Select a cell and tap a number.</div>
+    <div id="sudoku-grid"></div>
+    <div class="num-pad">
+      <button class="num-btn" onclick="inputSudokuNum(1)">1</button>
+      <button class="num-btn" onclick="inputSudokuNum(2)">2</button>
+      <button class="num-btn" onclick="inputSudokuNum(3)">3</button>
+      <button class="num-btn" onclick="inputSudokuNum(4)">4</button>
+      <button class="num-btn" onclick="inputSudokuNum(5)">5</button>
+      <button class="num-btn" onclick="inputSudokuNum(6)">6</button>
+      <button class="num-btn" onclick="inputSudokuNum(7)">7</button>
+      <button class="num-btn" onclick="inputSudokuNum(8)">8</button>
+      <button class="num-btn" onclick="inputSudokuNum(9)">9</button>
+      <button class="num-btn erase" onclick="inputSudokuNum(0)">DEL</button>
+    </div>
+    <button class="action-btn" onclick="initSudoku()">New Sudoku Game</button>
+  </div>
+
+  <!-- GAME 5: MAHJONG SOLITAIRE -->
+  <div id="mahjong-view" class="game-view">
+    <div class="status-box" id="mahjong-status">Tap matching free tiles to clear the board!</div>
+    <div id="mahjong-board"></div>
+    <div style="display: flex; gap: 10px;">
+      <button class="action-btn" onclick="initMahjong()">New Game</button>
+      <button class="action-btn" onclick="shuffleMahjong()">Shuffle Tiles</button>
+    </div>
+  </div>
+
+  <!-- POPUP RESULT MODAL -->
+  <div id="popup-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title">🎉 Victory!</div>
+      <div class="modal-text" id="modal-text">You solved the puzzle!</div>
+      <button class="modal-btn" onclick="closeModal()">Play Again</button>
+    </div>
+  </div>
+
+  <!-- Required JS Libraries -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+  <script>
+    // -------------------------------------------------------------
+    // POPUP MODAL SYSTEM
+    // -------------------------------------------------------------
+    let modalCallback = null;
+    function showPopup(title, text, callback) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-text').textContent = text;
+      modalCallback = callback;
+      document.getElementById('popup-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('popup-modal').classList.remove('active');
+      if (modalCallback) { modalCallback(); modalCallback = null; }
+    }
+
+    // -------------------------------------------------------------
+    // 1. TAB SWITCHING SYSTEM
+    // -------------------------------------------------------------
+    function switchTab(gameKey) {
+      document.querySelectorAll('.game-view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      if (gameKey === 'wordle') {
+        document.getElementById('wordle-view').classList.add('active');
+        event.target.classList.add('active');
+      } else if (gameKey === 'chess') {
+        document.getElementById('chess-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!chessBoard) initChess();
+      } else if (gameKey === 'checkers') {
+        document.getElementById('checkers-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!checkersBoardInitialized) initCheckers();
+      } else if (gameKey === 'sudoku') {
+        document.getElementById('sudoku-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!sudokuInitialized) initSudoku();
+      } else if (gameKey === 'mahjong') {
+        document.getElementById('mahjong-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!mahjongInitialized) initMahjong();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 2. CHESS ENGINE
+    // -------------------------------------------------------------
+    let chessGame, chessBoard;
+    const pieceValues = { p: 10, r: 50, n: 30, b: 35, q: 90, k: 1000 };
+
+    function evaluateChessBoard(board) {
+      let evalSum = 0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          let piece = board[r][c];
+          if (piece) {
+            let val = pieceValues[piece.type];
+            evalSum += (piece.color === 'b' ? val : -val);
+          }
+        }
+      }
+      return evalSum;
+    }
+
+    function minimaxChess(game, depth, alpha, beta, isMaximizing) {
+      if (depth === 0 || game.game_over()) return evaluateChessBoard(game.board());
+
+      let moves = game.moves();
+      if (isMaximizing) {
+        let maxEval = -99999;
+        for (let move of moves) {
+          game.move(move);
+          let evaluation = minimaxChess(game, depth - 1, alpha, beta, false);
+          game.undo();
+          maxEval = Math.max(maxEval, evaluation);
+          alpha = Math.max(alpha, evaluation);
+          if (beta <= alpha) break;
+        }
+        return maxEval;
+      } else {
+        let minEval = 99999;
+        for (let move of moves) {
+          game.move(move);
+          let evaluation = minimaxChess(game, depth - 1, alpha, beta, true);
+          game.undo();
+          minEval = Math.min(minEval, evaluation);
+          beta = Math.min(beta, evaluation);
+          if (beta <= alpha) break;
+        }
+        return minEval;
+      }
+    }
+
+    function makeCPUMove() {
+      if (chessGame.game_over()) return;
+
+      let moves = chessGame.moves();
+      if (moves.length === 0) return;
+
+      let bestMove = null;
+      let bestVal = -99999;
+
+      for (let move of moves) {
+        chessGame.move(move);
+        let val = minimaxChess(chessGame, 2, -100000, 100000, false);
+        chessGame.undo();
+        if (val >= bestVal) {
+          bestVal = val;
+          bestMove = move;
+        }
+      }
+
+      chessGame.move(bestMove || moves[Math.floor(Math.random() * moves.length)]);
+      chessBoard.position(chessGame.fen());
+      removeChessHighlights();
+      updateChessStatus();
+    }
+
+    function removeChessHighlights() {
+      $('#chess-board .square-55d63').removeClass('highlight-target');
+    }
+
+    function highlightSquare(square) {
+      $('#chess-board .square-' + square).addClass('highlight-target');
+    }
+
+    function onDragStart(source, piece) {
+      if (chessGame.game_over()) return false;
+      if (chessGame.turn() !== 'w') return false;
+      if (piece.search(/^b/) !== -1) return false;
+
+      let moves = chessGame.moves({ square: source, verbose: true });
+      if (moves.length === 0) return;
+
+      removeChessHighlights();
+      moves.forEach(m => highlightSquare(m.to));
+    }
+
+    function onDrop(source, target) {
+      removeChessHighlights();
+      let move = chessGame.move({ from: source, to: target, promotion: 'q' });
+      if (move === null) return 'snapback';
+
+      updateChessStatus();
+      window.setTimeout(makeCPUMove, 300);
+    }
+
+    function onSnapEnd() {
+      chessBoard.position(chessGame.fen());
+    }
+
+    function updateChessStatus() {
+      let status = 'You (White) vs Super CPU (Black)';
+      if (chessGame.in_checkmate()) {
+        if (chessGame.turn() === 'w') {
+          showPopup('💔 Game Over', 'The CPU Checkmated you!', resetChess);
+        } else {
+          showPopup('🏆 Checkmate!', '🎉 You defeated the Chess CPU!', resetChess);
+        }
+      } else if (chessGame.in_draw()) {
+        showPopup('🤝 Draw!', 'The game ended in a stalemate.', resetChess);
+      } else if (chessGame.in_check()) {
+        status += ' (Check!)';
+      }
+      document.getElementById('chess-status').textContent = status;
+    }
+
+    function initChess() {
+      chessGame = new Chess();
+      chessBoard = Chessboard('chess-board', {
+        draggable: true,
+        position: 'start',
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onSnapEnd: onSnapEnd
+      });
+      updateChessStatus();
+    }
+
+    function resetChess() {
+      if (chessGame) {
+        chessGame.reset();
+        chessBoard.position('start');
+        removeChessHighlights();
+        updateChessStatus();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 3. CHECKERS ENGINE
+    // -------------------------------------------------------------
+    let checkersBoardInitialized = false;
+    let checkersState = [];
+    let selectedPiece = null;
+    let validMoves = [];
+    let checkersTurn = 'blue';
+
+    function initCheckers() {
+      checkersBoardInitialized = true;
+      checkersTurn = 'blue';
+      selectedPiece = null;
+      validMoves = [];
+      document.getElementById('checkers-status').textContent = 'Your turn! Tap a Blue piece to move.';
+
+      const boardEl = document.getElementById('checkers-board');
+      boardEl.innerHTML = '';
+      checkersState = Array(8).fill(null).map(() => Array(8).fill(null));
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cell = document.createElement('div');
+          cell.className = `c-cell ${(r + c) % 2 === 1 ? 'dark' : 'light'}`;
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener('click', () => handleCellClick(r, c));
+
+          if ((r + c) % 2 === 1) {
+            if (r < 3) checkersState[r][c] = { color: 'red', isKing: false };
+            else if (r > 4) checkersState[r][c] = { color: 'blue', isKing: false };
+          }
+          boardEl.appendChild(cell);
+        }
+      }
+      renderCheckers();
+    }
+
+    function renderCheckers() {
+      document.querySelectorAll('.c-cell').forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('highlight');
+        const r = parseInt(cell.dataset.row);
+        const c = parseInt(cell.dataset.col);
+        const p = checkersState[r][c];
+
+        if (p) {
+          const piece = document.createElement('div');
+          piece.className = `c-piece ${p.color} ${p.isKing ? 'king' : ''}`;
+          if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) {
+            piece.classList.add('selected');
+          }
+          cell.appendChild(piece);
+        }
+
+        if (validMoves.some(m => m.tr === r && m.tc === c)) {
+          cell.classList.add('highlight');
+        }
+      });
+    }
+
+    function getPieceMoves(board, r, c) {
+      const p = board[r][c];
+      if (!p) return [];
+
+      const moves = [];
+      const jumps = [];
+      const dirs = [];
+
+      if (p.color === 'blue' || p.isKing) dirs.push([-1, -1], [-1, 1]);
+      if (p.color === 'red' || p.isKing) dirs.push([1, -1], [1, 1]);
+
+      dirs.forEach(([dr, dc]) => {
+        const tr = r + dr, tc = c + dc;
+        if (tr >= 0 && tr < 8 && tc >= 0 && tc < 8) {
+          if (!board[tr][tc]) {
+            moves.push({ r, c, tr, tc, isJump: false });
+          } else if (board[tr][tc].color !== p.color) {
+            const jr = tr + dr, jc = tc + dc;
+            if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && !board[jr][jc]) {
+              jumps.push({ r, c, tr: jr, tc: jc, capR: tr, capC: tc, isJump: true });
+            }
+          }
+        }
+      });
+
+      return jumps.length > 0 ? jumps : moves;
+    }
+
+    function handleCellClick(r, c) {
+      if (checkersTurn !== 'blue') return;
+      const p = checkersState[r][c];
+
+      if (p && p.color === 'blue') {
+        selectedPiece = { r, c };
+        validMoves = getPieceMoves(checkersState, r, c);
+        renderCheckers();
+        return;
+      }
+
+      if (selectedPiece) {
+        const move = validMoves.find(m => m.tr === r && m.tc === c);
+        if (move) {
+          executeCheckersMove(move);
+          selectedPiece = null;
+          validMoves = [];
+          renderCheckers();
+
+          checkersTurn = 'red';
+          document.getElementById('checkers-status').textContent = 'CPU is thinking...';
+          setTimeout(makeCheckersCPUMove, 450);
+        }
+      }
+    }
+
+    function executeCheckersMove(m) {
+      const p = checkersState[m.r][m.c];
+      checkersState[m.tr][m.tc] = p;
+      checkersState[m.r][m.c] = null;
+
+      if (m.isJump) checkersState[m.capR][m.capC] = null;
+      if (p.color === 'blue' && m.tr === 0) p.isKing = true;
+      if (p.color === 'red' && m.tr === 7) p.isKing = true;
+    }
+
+    function makeCheckersCPUMove() {
+      let allCPUMoves = [];
+      let allJumps = [];
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (checkersState[r][c] && checkersState[r][c].color === 'red') {
+            const moves = getPieceMoves(checkersState, r, c);
+            moves.forEach(m => {
+              if (m.isJump) allJumps.push(m);
+              else allCPUMoves.push(m);
+            });
+          }
+        }
+      }
+
+      const available = allJumps.length > 0 ? allJumps : allCPUMoves;
+
+      if (available.length === 0) {
+        showPopup('🏆 Checkers Victory!', 'You captured all CPU pieces!', initCheckers);
+        return;
+      }
+
+      let chosenMove = available[Math.floor(Math.random() * available.length)];
+      for (let m of available) {
+        if (m.isJump || m.tr === 7) { chosenMove = m; break; }
+      }
+
+      executeCheckersMove(chosenMove);
+      renderCheckers();
+
+      checkersTurn = 'blue';
+      document.getElementById('checkers-status').textContent = 'Your turn! Tap a Blue piece to move.';
+    }
+
+    // -------------------------------------------------------------
+    // 4. SUDOKU GAME ENGINE
+    // -------------------------------------------------------------
+    let sudokuInitialized = false;
+    let sudokuDiff = 'easy';
+    let sudokuSolution = [];
+    let sudokuPuzzle = [];
+    let playerSudoku = [];
+    let selectedSudokuCell = null;
+
+    const SUDOKU_BOARDS = {
+      easy: {
+        p: "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+        s: "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+      },
+      medium: {
+        p: "000260701680070090190004500820100040004602900050003028009300074040050036703018000",
+        s: "435269781682571493197834562826195347374682915951743628519326874248957136763418259"
+      },
+      hard: {
+        p: "000000012000000003002300400001800005060070800000009000008500000900040500470006001",
+        s: "635497212184251693792368451241835976563172849879649325318524769926743518475986231"
+      }
+    };
+
+    function initSudoku() {
+      sudokuInitialized = true;
+      const b = SUDOKU_BOARDS[sudokuDiff];
+      sudokuPuzzle = b.p.split('').map(Number);
+      sudokuSolution = b.s.split('').map(Number);
+      playerSudoku = [...sudokuPuzzle];
+      selectedSudokuCell = null;
+
+      const gridEl = document.getElementById('sudoku-grid');
+      gridEl.innerHTML = '';
+
+      for (let i = 0; i < 81; i++) {
+        const r = Math.floor(i / 9);
+        const c = i % 9;
+        const cell = document.createElement('div');
+        cell.className = 's-cell';
+        if (c === 2 || c === 5) cell.classList.add('border-r');
+        if (r === 2 || r === 5) cell.classList.add('border-b');
+        if (sudokuPuzzle[i] !== 0) cell.classList.add('given');
+        cell.dataset.idx = i;
+        cell.addEventListener('click', () => selectSudokuCell(i));
+        gridEl.appendChild(cell);
+      }
+      renderSudoku();
+    }
+
+    function setSudokuDiff(diff) {
+      sudokuDiff = diff;
+      document.querySelectorAll('#sudoku-view .mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === diff);
+      });
+      initSudoku();
+    }
+
+    function renderSudoku() {
+      document.querySelectorAll('.s-cell').forEach((cell, i) => {
+        const val = playerSudoku[i];
+        cell.textContent = val !== 0 ? val : '';
+        cell.classList.remove('selected', 'highlighted');
+
+        if (selectedSudokuCell !== null) {
+          const selR = Math.floor(selectedSudokuCell / 9);
+          const selC = selectedSudokuCell % 9;
+          const r = Math.floor(i / 9);
+          const c = i % 9;
+          if (i === selectedSudokuCell) cell.classList.add('selected');
+          else if (r === selR || c === selC) cell.classList.add('highlighted');
+        }
+      });
+    }
+
+    function selectSudokuCell(idx) {
+      selectedSudokuCell = idx;
+      renderSudoku();
+    }
+
+    function inputSudokuNum(num) {
+      if (selectedSudokuCell === null) return;
+      if (sudokuPuzzle[selectedSudokuCell] !== 0) return; // Fixed given number
+
+      playerSudoku[selectedSudokuCell] = num;
+      renderSudoku();
+
+      // Win check
+      if (!playerSudoku.includes(0)) {
+        if (playerSudoku.every((val, idx) => val === sudokuSolution[idx])) {
+          showPopup('🧩 Sudoku Solved!', 'You successfully finished the board!', initSudoku);
+        } else {
+          document.getElementById('sudoku-status').textContent = '⚠️ Some numbers are incorrect!';
+        }
+      }
+    }
+
+    // Keyboard support for Sudoku
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('sudoku-view').classList.contains('active')) {
+        if (e.key >= '1' && e.key <= '9') inputSudokuNum(parseInt(e.key));
+        else if (e.key === 'Backspace' || e.key === 'Delete') inputSudokuNum(0);
+      }
+    });
+
+    // -------------------------------------------------------------
+    // 5. MAHJONG SOLITAIRE ENGINE
+    // -------------------------------------------------------------
+    let mahjongInitialized = false;
+    let mahjongTiles = [];
+    let selectedMahjongTile = null;
+
+    const MAHJONG_SYMBOLS = ['🦅', '🗽', '🔔', '📜', '🎆', '🇺🇸', '🏛️', '⚓', '⚔️', '🎩', '🎺', '🛡️'];
+
+    function initMahjong() {
+      mahjongInitialized = true;
+      selectedMahjongTile = null;
+      document.getElementById('mahjong-status').textContent = 'Tap matching free tiles to clear the board!';
+      
+      // Layout generation: 3 layers, total 48 tiles (24 matching pairs)
+      const layout = [
+        // Layer 0 (Bottom) 6x6
+        {l:0, r:1, c:1}, {l:0, r:1, c:2}, {l:0, r:1, c:3}, {l:0, r:1, c:4}, {l:0, r:1, c:5}, {l:0, r:1, c:6},
+        {l:0, r:2, c:1}, {l:0, r:2, c:2}, {l:0, r:2, c:3}, {l:0, r:2, c:4}, {l:0, r:2, c:5}, {l:0, r:2, c:6},
+        {l:0, r:3, c:1}, {l:0, r:3, c:2}, {l:0, r:3, c:3}, {l:0, r:3, c:4}, {l:0, r:3, c:5}, {l:0, r:3, c:6},
+        {l:0, r:4, c:1}, {l:0, r:4, c:2}, {l:0, r:4, c:3}, {l:0, r:4, c:4}, {l:0, r:4, c:5}, {l:0, r:4, c:6},
+        // Layer 1 (Middle) 4x4
+        {l:1, r:1.5, c:2}, {l:1, r:1.5, c:3}, {l:1, r:1.5, c:4}, {l:1, r:1.5, c:5},
+        {l:1, r:2.5, c:2}, {l:1, r:2.5, c:3}, {l:1, r:2.5, c:4}, {l:1, r:2.5, c:5},
+        {l:1, r:3.5, c:2}, {l:1, r:3.5, c:3}, {l:1, r:3.5, c:4}, {l:1, r:3.5, c:5},
+        // Layer 2 (Top) 2x4
+        {l:2, r:2, c:2.5}, {l:2, r:2, c:3.5}, {l:2, r:2, c:4.5},
+        {l:2, r:3, c:2.5}, {l:2, r:3, c:3.5}, {l:2, r:3, c:4.5},
+        {l:2, r:2.5, c:3}, {l:2, r:2.5, c:4}
+      ];
+
+      // Assign pairs
+      let deck = [];
+      MAHJONG_SYMBOLS.forEach(sym => deck.push(sym, sym, sym, sym)); // 12 * 4 = 48
+      deck.sort(() => Math.random() - 0.5);
+
+      mahjongTiles = layout.map((pos, i) => ({
+        id: i,
+        symbol: deck[i],
+        l: pos.l,
+        r: pos.r,
+        c: pos.c,
+        matched: false
+      }));
+
+      renderMahjong();
+    }
+
+    function isTileFree(t) {
+      if (t.matched) return false;
+      
+      // Covered by a higher layer?
+      const covered = mahjongTiles.some(other => 
+        !other.matched && other.l > t.l && Math.abs(other.r - t.r) < 0.9 && Math.abs(other.c - t.c) < 0.9
+      );
+      if (covered) return false;
+
+      // Check left or right blocked on same layer
+      const leftBlocked = mahjongTiles.some(other => !other.matched && other.l === t.l && Math.abs(other.r - t.r) < 0.8 && (t.c - other.c > 0.5 && t.c - other.c < 1.2));
+      const rightBlocked = mahjongTiles.some(other => !other.matched && other.l === t.l && Math.abs(other.r - t.r) < 0.8 && (other.c - t.c > 0.5 && other.c - t.c < 1.2));
+
+      return !leftBlocked || !rightBlocked;
+    }
+
+    function renderMahjong() {
+      const boardEl = document.getElementById('mahjong-board');
+      boardEl.innerHTML = '';
+
+      mahjongTiles.forEach(t => {
+        if (t.matched) return;
+
+        const tileEl = document.createElement('div');
+        tileEl.className = 'm-tile';
+        const free = isTileFree(t);
+        if (!free) tileEl.classList.add('blocked');
+        if (selectedMahjongTile && selectedMahjongTile.id === t.id) tileEl.classList.add('selected');
+
+        tileEl.style.left = `${t.c * 50 + t.l * 3}px`;
+        tileEl.style.top = `${t.r * 58 - t.l * 3}px`;
+        tileEl.style.zIndex = t.l * 10 + Math.floor(t.r);
+        tileEl.textContent = t.symbol;
+
+        tileEl.addEventListener('click', () => handleMahjongClick(t));
+        boardEl.appendChild(tileEl);
+      });
+    }
+
+    function handleMahjongClick(t) {
+      if (!isTileFree(t)) return;
+
+      if (!selectedMahjongTile) {
+        selectedMahjongTile = t;
+      } else if (selectedMahjongTile.id === t.id) {
+        selectedMahjongTile = null; // Deselect
+      } else if (selectedMahjongTile.symbol === t.symbol) {
+        // Match found!
+        t.matched = true;
+        selectedMahjongTile.matched = true;
+        selectedMahjongTile = null;
+
+        // Check Win
+        if (mahjongTiles.every(tile => tile.matched)) {
+          showPopup('🀄 Mahjong Master!', 'You cleared all tiles!', initMahjong);
+        }
+      } else {
+        selectedMahjongTile = t; // Switch selection
+      }
+      renderMahjong();
+    }
+
+    function shuffleMahjong() {
+      const remaining = mahjongTiles.filter(t => !t.matched);
+      const symbols = remaining.map(t => t.symbol).sort(() => Math.random() - 0.5);
+      remaining.forEach((t, idx) => t.symbol = symbols[idx]);
+      selectedMahjongTile = null;
+      renderMahjong();
+    }
+
+    // -------------------------------------------------------------
+    // 6. CHECKAWORDS (WORDLE) LOGIC
+    // -------------------------------------------------------------
+    const WORDS = {
+      5: ["STARS", "BRAVE", "GLORY", "EAGLE", "VALOR", "PRIDE", "MARCH", "RIGHT", "PEACE", "TRUTH"],
+      6: ["UNITED", "NATION", "BANNER", "SPIRIT", "COLONY", "PARADE", "STATES", "HEROES", "HONORS", "PLEDGE"],
+      7: ["LIBERTY", "FREEDOM", "AMERICA", "PATRIOT", "JUSTICE", "REPUBLIC", "HISTORY", "PIONEER", "TRIUMPH"]
+    };
+
+    let wordLength = 7;
+    let maxAttempts = 6;
+    let secretWord = "";
+    let currentAttempt = 0;
+    let currentGuess = "";
+    let isGameOver = false;
+
+    const keyboardLayout = [
+      ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+      ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+      ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "DEL"]
+    ];
+
+    function getDailyWord(len) {
+      const list = WORDS[len];
+      const today = new Date().toISOString().slice(0, 10);
+      let hash = 0;
+      for (let i = 0; i < today.length; i++) {
+        hash = (hash << 5) - hash + today.charCodeAt(i);
+        hash |= 0;
+      }
+      return list[Math.abs(hash) % list.length];
+    }
+
+    function initWordle() {
+      currentAttempt = 0; currentGuess = ""; isGameOver = false;
+      document.getElementById("wordle-msg").textContent = "";
+      secretWord = getDailyWord(wordLength);
+      renderWordleBoard();
+      renderWordleKeyboard();
+    }
+
+    function setWordMode(len) {
+      wordLength = len;
+      document.querySelectorAll("#wordle-view .mode-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.textContent.startsWith(len));
+      });
+      initWordle();
+    }
+
+    function renderWordleBoard() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      for (let i = 0; i < maxAttempts; i++) {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.style.gridTemplateColumns = `repeat(${wordLength}, 1fr)`;
+        for (let j = 0; j < wordLength; j++) {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.id = `tile-${i}-${j}`;
+          row.appendChild(tile);
+        }
+        grid.appendChild(row);
+      }
+    }
+
+    function renderWordleKeyboard() {
+      const kb = document.getElementById("keyboard");
+      kb.innerHTML = "";
+      keyboardLayout.forEach(row => {
+        const rDiv = document.createElement("div");
+        rDiv.className = "keyboard-row";
+        row.forEach(key => {
+          const btn = document.createElement("button");
+          btn.className = "key";
+          btn.id = `key-${key}`;
+          btn.textContent = key;
+          if (key === "ENTER" || key === "DEL") btn.classList.add("large");
+          btn.addEventListener("click", () => handleWordInput(key));
+          rDiv.appendChild(btn);
+        });
+        kb.appendChild(rDiv);
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (document.getElementById("wordle-view").classList.contains("active")) {
+        if (e.key === "Enter") handleWordInput("ENTER");
+        else if (e.key === "Backspace") handleWordInput("DEL");
+        else if (e.key.match(/^[a-zA-Z]$/)) handleWordInput(e.key.toUpperCase());
+      }
+    });
+
+    function handleWordInput(key) {
+      if (isGameOver) return;
+      if (key === "ENTER") {
+        if (currentGuess.length === wordLength) checkWordGuess();
+        else document.getElementById("wordle-msg").textContent = "Not enough letters!";
+      } else if (key === "DEL") {
+        if (currentGuess.length > 0) {
+          currentGuess = currentGuess.slice(0, -1);
+          updateWordRow();
+        }
+      } else if (currentGuess.length < wordLength && key.length === 1) {
+        currentGuess += key;
+        updateWordRow();
+      }
+    }
+
+    function updateWordRow() {
+      for (let j = 0; j < wordLength; j++) {
+        const tile = document.getElementById(`tile-${currentAttempt}-${j}`);
+        tile.textContent = currentGuess[j] || "";
+        tile.classList.toggle("pop", Boolean(currentGuess[j]));
+      }
+    }
+
+    function checkWordGuess() {
+      const targetArr = secretWord.split("");
+      const guessArr = currentGuess.split("");
+      const states = new Array(wordLength).fill("absent");
+
+      for (let i = 0; i < wordLength; i++) {
+        if (guessArr[i] === targetArr[i]) { states[i] = "correct"; targetArr[i] = null; }
+      }
+      for (let i = 0; i < wordLength; i++) {
+        if (states[i] !== "correct") {
+          const idx = targetArr.indexOf(guessArr[i]);
+          if (idx !== -1) { states[i] = "present"; targetArr[idx] = null; }
+        }
+      }
+
+      for (let i = 0; i < wordLength; i++) {
+        const tile = document.getElementById(`tile-${currentAttempt}-${i}`);
+        tile.classList.add(states[i]);
+        const kBtn = document.getElementById(`key-${guessArr[i]}`);
+        if (kBtn) kBtn.classList.add(states[i]);
+      }
+
+      if (currentGuess === secretWord) {
+        isGameOver = true;
+        setTimeout(() => showPopup('🎉 Wordle Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
+      } else if (currentAttempt === maxAttempts - 1) {
+        isGameOver = true;
+        setTimeout(() => showPopup('💔 Out of Guesses', `Today's secret word was: ${secretWord}`, initWordle), 400);
+      } else {
+        currentAttempt++;
+        currentGuess = "";
+      }
+    }
+
+    // Initialize Checkawords on start
+    initWordle();
+  </script>
+</body>
+</html>
