@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkawords - America 250</title>
+  <title>Checkawords - Autumn Harvest</title>
   
   <!-- Chessboard CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
@@ -12,8 +12,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0b132b;
-      color: #ffffff;
+      background-color: #1c0a00;
+      color: #fef3c7;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -25,14 +25,15 @@
     header { text-align: center; margin-bottom: 8px; }
     .a250-badge {
       display: inline-block;
-      background: linear-gradient(90deg, #bf0a30 0%, #ffffff 50%, #002868 100%);
+      background: linear-gradient(90deg, #ea580c 0%, #f59e0b 50%, #b91c1c 100%);
       padding: 2px;
       border-radius: 20px;
       margin-bottom: 6px;
+      box-shadow: 0 0 12px rgba(234, 88, 12, 0.4);
     }
     .a250-badge-inner {
-      background: #0b132b;
-      color: #ffffff;
+      background: #1c0a00;
+      color: #fcd34d;
       padding: 4px 14px;
       border-radius: 18px;
       font-size: 0.8rem;
@@ -40,7 +41,12 @@
       letter-spacing: 1.5px;
       text-transform: uppercase;
     }
-    h1 { font-size: 2.1rem; letter-spacing: 2px; text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    h1 { 
+      font-size: 2.1rem; 
+      letter-spacing: 2px; 
+      color: #fef3c7;
+      text-shadow: 0 0 12px rgba(234, 88, 12, 0.6); 
+    }
 
     /* Navigation Bar */
     .game-nav {
@@ -49,64 +55,77 @@
       justify-content: center;
       gap: 6px;
       margin: 10px 0 15px 0;
-      background: #1c2541;
+      background: #2c1202;
       padding: 6px;
       border-radius: 25px;
-      border: 1px solid #3a4768;
-      max-width: 600px;
+      border: 1px solid #5c2707;
+      max-width: 680px;
     }
     .nav-btn {
       background: transparent;
-      color: #94a3b8;
+      color: #fcd34d;
       border: 0;
       padding: 8px 12px;
       border-radius: 20px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.15s ease;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
     }
     .nav-btn:active { transform: scale(0.92); }
     .nav-btn.active {
-      background-color: #002868;
-      color: #ffffff;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+      background-color: #ea580c;
+      color: #1c0a00;
+      box-shadow: 0 0 14px rgba(234, 88, 12, 0.7);
     }
 
     /* Game View Container */
     .game-view { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; }
     .game-view.active { display: flex; }
 
-    .status-box { font-weight: bold; margin: 6px 0; color: #38bdf8; text-align: center; min-height: 24px; font-size: 1.05rem; }
+    .status-box { 
+      font-weight: bold; 
+      margin: 6px 0; 
+      color: #f59e0b; 
+      text-align: center; 
+      min-height: 24px; 
+      font-size: 1.05rem; 
+      text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+    }
 
     /* Controls */
     .mode-selector { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
     .mode-btn {
-      background: #1c2541; color: white; border: 1px solid #3a4768;
+      background: #2c1202; color: #fde68a; border: 1px solid #5c2707;
       padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold;
       transition: transform 0.1s ease; font-size: 0.8rem;
     }
     .mode-btn:active { transform: scale(0.92); }
-    .mode-btn.active { background: #bf0a30; border-color: white; box-shadow: 0 0 10px rgba(191,10,48,0.5); }
+    .mode-btn.active { 
+      background: #ea580c; 
+      color: #1c0a00; 
+      border-color: #fcd34d; 
+      box-shadow: 0 0 10px rgba(234, 88, 12, 0.6); 
+    }
 
     /* Wordle Styles */
     #grid { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 6px; margin-bottom: 12px; }
     .row { display: grid; grid-gap: 6px; }
     .tile {
-      width: 50px; height: 50px; border: 2px solid #2a3759; background-color: #1c2541;
+      width: 50px; height: 50px; border: 2px solid #5c2707; background-color: #2c1202;
       display: flex; justify-content: center; align-items: center; font-size: 1.7rem;
-      font-weight: 800; text-transform: uppercase; border-radius: 6px;
+      font-weight: 800; text-transform: uppercase; border-radius: 6px; color: #fde68a;
       transition: border-color 0.15s ease;
     }
-    .tile.pop { animation: tilePop 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-color: #38bdf8 !important; }
-    .correct { background-color: #002868 !important; border-color: #3b82f6 !important; }
-    .present { background-color: #bf0a30 !important; border-color: #ef4444 !important; }
-    .absent { background-color: #273043 !important; border-color: #273043 !important; color: #64748b; }
+    .tile.pop { animation: tilePop 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-color: #f59e0b !important; }
+    .correct { background-color: #ea580c !important; border-color: #f97316 !important; color: #1c0a00 !important; box-shadow: 0 0 10px rgba(234,88,12,0.5); }
+    .present { background-color: #f59e0b !important; border-color: #fbbf24 !important; color: #1c0a00 !important; box-shadow: 0 0 10px rgba(245,158,11,0.5); }
+    .absent { background-color: #140700 !important; border-color: #3b1703 !important; color: #525252; }
     
     #keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 500px; }
     .keyboard-row { display: flex; justify-content: center; gap: 5px; }
     .key {
-      background-color: #334155; color: white; border: 0; border-radius: 6px;
+      background-color: #3b1703; color: #fde68a; border: 0; border-radius: 6px;
       height: 52px; flex: 1; display: flex; justify-content: center; align-items: center;
       font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem;
       transition: transform 0.08s ease, background-color 0.15s ease;
@@ -115,28 +134,31 @@
     .key.large { flex: 1.5; font-size: 0.8rem; }
 
     /* Chessboard */
-    #chess-board { width: 100%; max-width: 420px; margin: 10px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    #chess-board { 
+      width: 100%; max-width: 420px; margin: 10px 0; border-radius: 8px; overflow: hidden; 
+      border: 3px solid #ea580c; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25); 
+    }
     .highlight-target { position: relative; }
     .highlight-target::after {
       content: ""; position: absolute; width: 18px; height: 18px;
-      background-color: rgba(56, 189, 248, 0.75); border-radius: 50%;
+      background-color: rgba(245, 158, 11, 0.75); border-radius: 50%;
       top: 50%; left: 50%; transform: translate(-50%, -50%);
-      box-shadow: 0 0 10px #38bdf8;
+      box-shadow: 0 0 10px #f59e0b;
     }
 
     /* Checkers Board */
     #checkers-board {
       width: 400px; height: 400px; display: grid;
       grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
-      border: 4px solid #3a4768; border-radius: 8px; margin: 10px 0;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      border: 3px solid #ea580c; border-radius: 8px; margin: 10px 0;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
     }
     .c-cell { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; position: relative; }
-    .c-cell.light { background-color: #cbd5e1; }
-    .c-cell.dark { background-color: #1c2541; }
+    .c-cell.light { background-color: #52250d; }
+    .c-cell.dark { background-color: #2c1202; }
     .c-cell.highlight::after {
-      content: ""; width: 16px; height: 16px; background: #059669;
-      border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulseTarget 1s infinite alternate;
+      content: ""; width: 16px; height: 16px; background: #f59e0b;
+      border-radius: 50%; box-shadow: 0 0 10px #fbbf24; animation: pulseTarget 1s infinite alternate;
     }
     .c-cell.highlight { cursor: pointer; }
     .c-piece {
@@ -144,156 +166,210 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .c-piece.selected { outline: 4px solid #f59e0b; transform: scale(1.2); box-shadow: 0 0 16px #f59e0b; z-index: 10; }
-    .c-piece.red { background: radial-gradient(circle, #ef4444, #bf0a30); }
-    .c-piece.blue { background: radial-gradient(circle, #3b82f6, #002868); }
-    .c-piece.king::after { content: "★"; color: #fbbf24; font-size: 20px; display: flex; justify-content: center; line-height: 38px; }
+    .c-piece.red { background: radial-gradient(circle, #b91c1c, #7f1d1d); }
+    .c-piece.blue { background: radial-gradient(circle, #f59e0b, #b45309); }
+    .c-piece.king::after { content: "🍂"; font-size: 18px; display: flex; justify-content: center; line-height: 38px; }
 
     /* Sudoku Styles */
     #sudoku-grid {
       display: grid; grid-template-columns: repeat(9, 1fr);
-      width: 380px; height: 380px; border: 3px solid #38bdf8;
+      width: 380px; height: 380px; border: 3px solid #ea580c;
       border-radius: 8px; overflow: hidden; margin: 10px 0;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5); background: #1c2541;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.25); background: #2c1202;
     }
     .s-cell {
       display: flex; justify-content: center; align-items: center;
-      font-size: 1.3rem; font-weight: bold; background: #1c2541;
-      border: 1px solid #2a3759; cursor: pointer; color: #38bdf8;
+      font-size: 1.3rem; font-weight: bold; background: #2c1202;
+      border: 1px solid #5c2707; cursor: pointer; color: #f59e0b;
       transition: background 0.1s ease;
     }
-    .s-cell.given { color: #ffffff; font-weight: 900; background: #131c35; }
-    .s-cell.selected { background: #002868 !important; box-shadow: inset 0 0 8px #3b82f6; }
-    .s-cell.highlighted { background: #273043; }
-    .s-cell.border-r { border-right: 3px solid #38bdf8; }
-    .s-cell.border-b { border-bottom: 3px solid #38bdf8; }
+    .s-cell.given { color: #fef3c7; font-weight: 900; background: #1c0a00; }
+    .s-cell.selected { background: #ea580c !important; color: #1c0a00 !important; box-shadow: inset 0 0 8px #fde68a; }
+    .s-cell.highlighted { background: #3b1703; }
+    .s-cell.border-r { border-right: 3px solid #ea580c; }
+    .s-cell.border-b { border-bottom: 3px solid #ea580c; }
     
     .num-pad { display: flex; gap: 6px; margin-top: 10px; width: 100%; max-width: 380px; }
     .num-btn {
-      flex: 1; height: 45px; background: #334155; color: white; border: 0;
+      flex: 1; height: 45px; background: #3b1703; color: #fde68a; border: 0;
       border-radius: 6px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
     }
     .num-btn:active { transform: scale(0.92); }
-    .num-btn.erase { background: #bf0a30; font-size: 0.8rem; }
+    .num-btn.erase { background: #b91c1c; color: #fef3c7; font-size: 0.8rem; }
 
     /* Mahjong Styles */
     #mahjong-board {
       width: 420px; height: 380px; position: relative;
-      background: #1c2541; border: 3px solid #3a4768; border-radius: 8px;
-      margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden;
+      background: #2c1202; border: 3px solid #ea580c; border-radius: 8px;
+      margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25); overflow: hidden;
     }
     .m-tile {
       position: absolute; width: 44px; height: 56px;
-      background: linear-gradient(145deg, #f8fafc, #cbd5e1);
-      border: 2px solid #94a3b8; border-radius: 6px;
+      background: linear-gradient(145deg, #52250d, #2c1202);
+      border: 2px solid #ea580c; border-radius: 6px; color: #fde68a;
       display: flex; justify-content: center; align-items: center;
       font-size: 1.6rem; cursor: pointer;
-      box-shadow: -2px 3px 0px #64748b, -4px 6px 8px rgba(0,0,0,0.5);
+      box-shadow: -2px 3px 0px #1c0a00, -4px 6px 8px rgba(0,0,0,0.5);
       transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
     .m-tile.selected {
       transform: translateY(-6px) scale(1.08);
       border-color: #f59e0b; box-shadow: 0 0 16px #f59e0b; z-index: 100 !important;
     }
-    .m-tile.blocked { opacity: 0.6; filter: grayscale(40%); cursor: not-allowed; }
+    .m-tile.blocked { opacity: 0.5; filter: grayscale(50%); cursor: not-allowed; }
+
+    /* 2048 HARVEST STYLES */
+    .g2048-container {
+      width: 360px; height: 360px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 12px; padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr);
+      grid-gap: 8px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .g2048-cell {
+      background: #1c0a00; border-radius: 8px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; font-weight: 800; font-size: 1.1rem;
+      color: #fef3c7; transition: transform 0.1s ease; position: relative;
+    }
+    .g2048-cell .icon { font-size: 1.4rem; line-height: 1.1; }
+    .g2048-cell .val { font-size: 0.8rem; opacity: 0.9; }
+    .g2048-cell[data-val="2"] { background: #3b1703; color: #fde68a; }
+    .g2048-cell[data-val="4"] { background: #52250d; color: #fcd34d; }
+    .g2048-cell[data-val="8"] { background: #b91c1c; color: #fef3c7; }
+    .g2048-cell[data-val="16"] { background: #c2410c; color: #fff; }
+    .g2048-cell[data-val="32"] { background: #ea580c; color: #fff; }
+    .g2048-cell[data-val="64"] { background: #d97706; color: #fff; }
+    .g2048-cell[data-val="128"] { background: #f59e0b; color: #1c0a00; box-shadow: 0 0 10px #f59e0b; }
+    .g2048-cell[data-val="256"] { background: #fbbf24; color: #1c0a00; box-shadow: 0 0 14px #fbbf24; }
+    .g2048-cell[data-val="512"] { background: #facc15; color: #1c0a00; box-shadow: 0 0 18px #facc15; }
+    .g2048-cell[data-val="1024"] { background: #4ade80; color: #1c0a00; box-shadow: 0 0 22px #4ade80; }
+    .g2048-cell[data-val="2048"] { background: #38bdf8; color: #1c0a00; box-shadow: 0 0 25px #38bdf8; }
+
+    /* SNAKE STYLES */
+    #snake-canvas {
+      background: #1c0a00; border: 3px solid #ea580c; border-radius: 12px;
+      margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .touch-controls {
+      display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(2, 50px);
+      gap: 6px; margin-top: 6px; justify-content: center;
+    }
+    .touch-btn {
+      background: #3b1703; color: #fde68a; border: 1px solid #ea580c; border-radius: 8px;
+      font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center;
+    }
+    .touch-btn:active { background: #ea580c; color: #1c0a00; }
+
+    /* SWEEPER STYLES */
+    #sweeper-board {
+      display: grid; grid-template-columns: repeat(9, 1fr); grid-gap: 4px;
+      width: 360px; height: 360px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 12px; padding: 8px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .sw-cell {
+      background: #3b1703; border-radius: 4px; display: flex; justify-content: center; align-items: center;
+      font-weight: 900; font-size: 1.1rem; cursor: pointer; color: #fde68a; border: 1px solid #5c2707;
+      transition: background 0.1s ease;
+    }
+    .sw-cell.revealed { background: #1c0a00; border-color: #2c1202; }
+    .sw-cell.flagged { background: #7f1d1d; color: #fca5a5; }
 
     /* CHOMP STYLES */
     #chomp-board {
       display: grid; grid-template-columns: repeat(7, 1fr); grid-gap: 6px;
-      width: 380px; height: 280px; background: #1c2541; border: 3px solid #3a4768;
-      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      width: 380px; height: 280px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
     }
     .chomp-tile {
-      background: linear-gradient(145deg, #3b82f6, #002868); border-radius: 6px;
+      background: linear-gradient(145deg, #ea580c, #9a3412); border-radius: 6px;
       display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
       cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s ease;
     }
     .chomp-tile:active { transform: scale(0.92); }
-    .chomp-tile.poison { background: linear-gradient(145deg, #ef4444, #bf0a30) !important; border: 2px solid #fbbf24; }
+    .chomp-tile.poison { background: linear-gradient(145deg, #b91c1c, #7f1d1d) !important; border: 2px solid #f87171; }
     .chomp-tile.eaten { background: transparent !important; box-shadow: none !important; cursor: default; }
 
     /* PEG SOLITAIRE STYLES */
     #peg-board {
       display: grid; grid-template-columns: repeat(7, 1fr); grid-gap: 6px;
-      width: 360px; height: 360px; background: #1c2541; border: 3px solid #3a4768;
-      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      width: 360px; height: 360px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
     }
     .peg-slot {
       width: 42px; height: 42px; border-radius: 50%; display: flex;
       justify-content: center; align-items: center; position: relative;
     }
     .peg-slot.invalid { visibility: hidden; }
-    .peg-slot.empty { background: #0b132b; border: 2px dashed #3a4768; }
-    .peg-slot.target { background: #059669 !important; border: 2px solid #10b981; cursor: pointer; animation: pulseTarget 0.8s infinite alternate; }
+    .peg-slot.empty { background: #1c0a00; border: 2px dashed #5c2707; }
+    .peg-slot.target { background: #b91c1c !important; border: 2px solid #f87171; cursor: pointer; animation: pulseTarget 0.8s infinite alternate; }
     .peg {
       width: 34px; height: 34px; border-radius: 50%;
-      background: radial-gradient(circle, #38bdf8, #002868);
+      background: radial-gradient(circle, #f59e0b, #b45309);
       box-shadow: 0 3px 6px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.15s ease;
     }
-    .peg.selected { outline: 3px solid #f59e0b; transform: scale(1.18); box-shadow: 0 0 12px #f59e0b; }
+    .peg.selected { outline: 3px solid #ea580c; transform: scale(1.18); box-shadow: 0 0 12px #ea580c; }
 
     /* LIGHTS OUT STYLES */
     #lights-board {
       display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 8px;
-      width: 350px; height: 350px; background: #1c2541; border: 3px solid #3a4768;
-      border-radius: 8px; padding: 12px; margin: 10px 0; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      width: 350px; height: 350px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 8px; padding: 12px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
     }
     .light-btn {
-      background: #273043; border: 2px solid #3a4768; border-radius: 10px;
+      background: #3b1703; border: 2px solid #5c2707; border-radius: 10px;
       display: flex; justify-content: center; align-items: center; font-size: 1.8rem;
       cursor: pointer; transition: all 0.2s ease;
     }
     .light-btn.on {
-      background: radial-gradient(circle, #f59e0b, #bf0a30);
-      border-color: #fbbf24; box-shadow: 0 0 16px rgba(245, 158, 11, 0.8);
+      background: radial-gradient(circle, #f97316, #d97706);
+      border-color: #fde68a; box-shadow: 0 0 16px rgba(249, 115, 22, 0.8);
     }
 
     /* NEWS FEED STYLES */
     .news-container { width: 100%; display: flex; flex-direction: column; gap: 10px; }
     .news-search-bar input {
-      width: 100%; padding: 10px 16px; border-radius: 20px; border: 1px solid #3a4768;
-      background: #1c2541; color: white; outline: none; font-size: 0.95rem; text-align: center;
+      width: 100%; padding: 10px 16px; border-radius: 20px; border: 1px solid #5c2707;
+      background: #2c1202; color: #fde68a; outline: none; font-size: 0.95rem; text-align: center;
     }
     .news-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
     .news-card {
-      background: #1c2541; border: 1px solid #3a4768; border-radius: 12px; padding: 14px;
-      display: flex; flex-direction: column; gap: 8px; text-align: left; transition: border-color 0.2s ease;
+      background: #2c1202; border: 1px solid #5c2707; border-radius: 12px; padding: 14px;
+      display: flex; flex-direction: column; gap: 8px; text-align: left; transition: all 0.2s ease;
     }
-    .news-card:hover { border-color: #38bdf8; }
-    .news-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #94a3b8; }
-    .news-badge { background: #002868; color: #38bdf8; padding: 3px 8px; border-radius: 10px; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; border: 1px solid #3b82f6; }
-    .news-badge.wire { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: #059669; }
-    .news-title { font-size: 1.05rem; font-weight: bold; color: #ffffff; line-height: 1.35; text-decoration: none; }
-    .news-title:hover { color: #38bdf8; }
-    .news-summary { font-size: 0.88rem; color: #cbd5e1; line-height: 1.45; }
+    .news-card:hover { border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.2); }
+    .news-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #fcd34d; }
+    .news-badge { background: #1c0a00; color: #f59e0b; padding: 3px 8px; border-radius: 10px; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; border: 1px solid #ea580c; }
+    .news-badge.wire { background: rgba(234, 88, 12, 0.15); color: #f59e0b; border-color: #d97706; }
+    .news-title { font-size: 1.05rem; font-weight: bold; color: #fde68a; line-height: 1.35; text-decoration: none; }
+    .news-title:hover { color: #f59e0b; }
+    .news-summary { font-size: 0.88rem; color: #fed7aa; line-height: 1.45; }
     .news-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.8rem; }
-    .news-link { color: #38bdf8; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .news-link { color: #f59e0b; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
     .news-link:hover { text-decoration: underline; }
 
     .action-btn {
-      background-color: #002868; color: white; border: 1px solid #3b82f6;
+      background-color: #ea580c; color: #1c0a00; border: 1px solid #f59e0b;
       padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;
-      transition: transform 0.1s ease;
+      box-shadow: 0 0 12px rgba(234, 88, 12, 0.4); transition: transform 0.1s ease;
     }
     .action-btn:active { transform: scale(0.92); }
 
     /* POPUP OVERLAY MODAL */
     .modal-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(11, 19, 43, 0.85); backdrop-filter: blur(5px);
+      background: rgba(28, 10, 0, 0.88); backdrop-filter: blur(5px);
       justify-content: center; align-items: center; z-index: 1000;
     }
     .modal-overlay.active { display: flex; animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .modal-card {
-      background: #1c2541; border: 2px solid #3b82f6; border-radius: 16px;
-      padding: 28px 24px; text-align: center; box-shadow: 0 12px 32px rgba(0,0,0,0.8);
+      background: #2c1202; border: 2px solid #ea580c; border-radius: 16px;
+      padding: 28px 24px; text-align: center; box-shadow: 0 0 30px rgba(234, 88, 12, 0.4);
       max-width: 90%; width: 350px;
     }
-    .modal-title { font-size: 1.6rem; margin-bottom: 10px; color: #ffffff; }
-    .modal-text { font-size: 1.1rem; color: #cbd5e1; margin-bottom: 20px; }
+    .modal-title { font-size: 1.6rem; margin-bottom: 10px; color: #fde68a; }
+    .modal-text { font-size: 1.1rem; color: #fed7aa; margin-bottom: 20px; }
     .modal-btn {
-      background: #bf0a30; color: white; border: 0; padding: 12px 24px;
+      background: #ea580c; color: #1c0a00; border: 0; padding: 12px 24px;
       border-radius: 25px; font-weight: bold; font-size: 1rem; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(191,10,48,0.5);
+      box-shadow: 0 0 15px rgba(234, 88, 12, 0.5);
     }
     .modal-btn:active { transform: scale(0.92); }
 
@@ -317,7 +393,7 @@
 
   <header>
     <div class="a250-badge">
-      <div class="a250-badge-inner">★ America 250 ★</div>
+      <div class="a250-badge-inner">🍁 Autumn Harvest 🌾</div>
     </div>
     <h1>CHECKAWORDS</h1>
   </header>
@@ -330,6 +406,9 @@
     <button class="nav-btn" onclick="switchTab('checkers')">Checkers</button>
     <button class="nav-btn" onclick="switchTab('sudoku')">Sudoku</button>
     <button class="nav-btn" onclick="switchTab('mahjong')">Mahjong</button>
+    <button class="nav-btn" onclick="switchTab('g2048')">2048 Harvest</button>
+    <button class="nav-btn" onclick="switchTab('snake')">Harvest Snake</button>
+    <button class="nav-btn" onclick="switchTab('sweeper')">Acorn Sweeper</button>
     <button class="nav-btn" onclick="switchTab('chomp')">Chomp</button>
     <button class="nav-btn" onclick="switchTab('peg')">Peg Solitaire</button>
     <button class="nav-btn" onclick="switchTab('lights')">Lights Out</button>
@@ -351,7 +430,7 @@
   <div id="news-view" class="game-view">
     <div class="news-container">
       <div class="news-search-bar">
-        <input type="text" id="news-search" placeholder="🔍 Search today's non-partisan wire..." onkeyup="filterNews()">
+        <input type="text" id="news-search" placeholder="🔍 Search today's autumn wire..." onkeyup="filterNews()">
       </div>
       <div class="mode-selector">
         <button class="mode-btn active" onclick="setNewsCategory('all')">All Wire</button>
@@ -375,7 +454,7 @@
 
   <!-- GAME 3: CHECKERS VS CPU -->
   <div id="checkers-view" class="game-view">
-    <div class="status-box" id="checkers-status">Your turn! Tap a Blue piece to move.</div>
+    <div class="status-box" id="checkers-status">Your turn! Tap an Amber piece to move.</div>
     <div id="checkers-board"></div>
     <button class="action-btn" onclick="initCheckers()">New Checkers Game</button>
   </div>
@@ -406,7 +485,7 @@
 
   <!-- GAME 5: MAHJONG SOLITAIRE -->
   <div id="mahjong-view" class="game-view">
-    <div class="status-box" id="mahjong-status">Tap matching free tiles to clear the board!</div>
+    <div class="status-box" id="mahjong-status">Tap matching free autumn tiles to clear the board!</div>
     <div id="mahjong-board"></div>
     <div style="display: flex; gap: 10px;">
       <button class="action-btn" onclick="initMahjong()">New Game</button>
@@ -414,23 +493,54 @@
     </div>
   </div>
 
-  <!-- GAME 6: CHOMP (THE POISON GRID) -->
+  <!-- GAME 6: 2048 HARVEST -->
+  <div id="g2048-view" class="game-view">
+    <div class="status-box" id="g2048-status">Score: 0 | Best: 0</div>
+    <div class="g2048-container" id="g2048-board"></div>
+    <p style="font-size: 0.85rem; color: #fcd34d; margin-bottom: 8px;">Use Arrow keys or Swipe to merge matching harvest tiles!</p>
+    <button class="action-btn" onclick="init2048()">New 2048 Game</button>
+  </div>
+
+  <!-- GAME 7: HARVEST SNAKE -->
+  <div id="snake-view" class="game-view">
+    <div class="status-box" id="snake-status">Acorns Gathered: 0</div>
+    <canvas id="snake-canvas" width="340" height="340"></canvas>
+    <div class="touch-controls">
+      <div style="grid-column: 2;"><button class="touch-btn" onclick="setSnakeDir('UP')">▲</button></div>
+      <div style="grid-row: 2; grid-column: 1;"><button class="touch-btn" onclick="setSnakeDir('LEFT')">◄</button></div>
+      <div style="grid-row: 2; grid-column: 2;"><button class="touch-btn" onclick="setSnakeDir('DOWN')">▼</button></div>
+      <div style="grid-row: 2; grid-column: 3;"><button class="touch-btn" onclick="setSnakeDir('RIGHT')">►</button></div>
+    </div>
+    <button class="action-btn" onclick="initSnake()" style="margin-top: 10px;">New Snake Run</button>
+  </div>
+
+  <!-- GAME 8: ACORN SWEEPER (MINESWEEPER) -->
+  <div id="sweeper-view" class="game-view">
+    <div class="status-box" id="sweeper-status">Acorns Remaining: 10 🌰</div>
+    <div id="sweeper-board"></div>
+    <div style="display: flex; gap: 10px;">
+      <button class="action-btn" onclick="toggleSweeperFlagMode()" id="sw-flag-btn">Mode: Reveal 🔍</button>
+      <button class="action-btn" onclick="initSweeper()">Reset Grid</button>
+    </div>
+  </div>
+
+  <!-- GAME 9: CHOMP (THE POISON GRID) -->
   <div id="chomp-view" class="game-view">
     <div class="status-box" id="chomp-status">Tap a tile to chomp! Avoid the Poison Skull 💀!</div>
     <div id="chomp-board"></div>
     <button class="action-btn" onclick="initChomp()">New Chomp Game</button>
   </div>
 
-  <!-- GAME 7: PEG SOLITAIRE -->
+  <!-- GAME 10: PEG SOLITAIRE -->
   <div id="peg-view" class="game-view">
-    <div class="status-box" id="peg-status">Jump pegs to remove them. Leave only 1 peg!</div>
+    <div class="status-box" id="peg-status">Jump acorns to remove them. Leave only 1 peg!</div>
     <div id="peg-board"></div>
     <button class="action-btn" onclick="initPeg()">New Peg Solitaire</button>
   </div>
 
-  <!-- GAME 8: LIGHTS OUT -->
+  <!-- GAME 11: LIGHTS OUT -->
   <div id="lights-view" class="game-view">
-    <div class="status-box" id="lights-status">Turn off all the glowing stars!</div>
+    <div class="status-box" id="lights-status">Turn off all the glowing autumn leaves!</div>
     <div id="lights-board"></div>
     <button class="action-btn" onclick="initLights()">New Puzzle</button>
   </div>
@@ -438,7 +548,7 @@
   <!-- POPUP RESULT MODAL -->
   <div id="popup-modal" class="modal-overlay">
     <div class="modal-card">
-      <div class="modal-title" id="modal-title">🎉 Victory!</div>
+      <div class="modal-title" id="modal-title">🍂 Harvest Victory!</div>
       <div class="modal-text" id="modal-text">You solved the puzzle!</div>
       <button class="modal-btn" onclick="closeModal()">Play Again</button>
     </div>
@@ -452,7 +562,6 @@
   <script>
     // -------------------------------------------------------------
     // EASY DAILY NEWS CURATION ARRAY (MANUAL OVERRIDE/OFFLINE FALLBACK)
-    // To manually update news daily, simply update this array!
     // -------------------------------------------------------------
     const DAILY_CURATED_NEWS = [
       {
@@ -489,9 +598,7 @@
       }
     ];
 
-    // -------------------------------------------------------------
     // POPUP MODAL SYSTEM
-    // -------------------------------------------------------------
     let modalCallback = null;
     function showPopup(title, text, callback) {
       document.getElementById('modal-title').textContent = title;
@@ -535,6 +642,18 @@
         document.getElementById('mahjong-view').classList.add('active');
         event.target.classList.add('active');
         if (!mahjongInitialized) initMahjong();
+      } else if (gameKey === 'g2048') {
+        document.getElementById('g2048-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!g2048Initialized) init2048();
+      } else if (gameKey === 'snake') {
+        document.getElementById('snake-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!snakeInitialized) initSnake();
+      } else if (gameKey === 'sweeper') {
+        document.getElementById('sweeper-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!sweeperInitialized) initSweeper();
       } else if (gameKey === 'chomp') {
         document.getElementById('chomp-view').classList.add('active');
         event.target.classList.add('active');
@@ -550,9 +669,7 @@
       }
     }
 
-    // -------------------------------------------------------------
     // UNBIASED NEWS MODULE
-    // -------------------------------------------------------------
     let newsInitialized = false;
     let allNewsArticles = [];
     let currentNewsCategory = 'all';
@@ -562,10 +679,9 @@
       const statusEl = document.getElementById('news-status');
       statusEl.textContent = '🔄 Fetching non-partisan live wire news...';
 
-      // Live RSS feeds from neutral wire outlets via RSS2JSON API
       const rssUrls = [
-        'https://feeds.npr.org/1001/rss.xml', // NPR Top News
-        'https://feeds.bbci.co.uk/news/world/rss.xml' // BBC World News Wire
+        'https://feeds.npr.org/1001/rss.xml',
+        'https://feeds.bbci.co.uk/news/world/rss.xml'
       ];
 
       try {
@@ -575,14 +691,12 @@
           const data = await res.json();
           if (data.status === 'ok' && data.items) {
             data.items.forEach(item => {
-              // Basic neutral topic classifier based on title/category keywords
               let cat = 'world';
               const text = (item.title + ' ' + item.description).toLowerCase();
               if (text.includes('tech') || text.includes('ai') || text.includes('chip') || text.includes('cyber') || text.includes('space')) cat = 'tech';
               else if (text.includes('bank') || text.includes('market') || text.includes('economy') || text.includes('trade') || text.includes('dollar')) cat = 'business';
               else if (text.includes('science') || text.includes('climate') || text.includes('health') || text.includes('research')) cat = 'science';
 
-              // Clean HTML tags from summary description
               const cleanSummary = item.description ? item.description.replace(/<[^>]*>?/gm, '').slice(0, 160) + '...' : 'Fact-checked wire coverage.';
 
               fetchedArticles.push({
@@ -604,7 +718,6 @@
           throw new Error('No live articles');
         }
       } catch (err) {
-        // Fallback to manual daily curated list if offline or API blocked
         allNewsArticles = DAILY_CURATED_NEWS;
         statusEl.textContent = 'Showing daily verified wire headlines';
       }
@@ -620,9 +733,7 @@
       renderNews();
     }
 
-    function filterNews() {
-      renderNews();
-    }
+    function filterNews() { renderNews(); }
 
     function renderNews() {
       const grid = document.getElementById('news-grid');
@@ -636,7 +747,7 @@
       });
 
       if (filtered.length === 0) {
-        grid.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">No wire stories matching your filter.</div>';
+        grid.innerHTML = '<div style="text-align:center; padding:20px; color:#fcd34d;">No wire stories matching your filter.</div>';
         return;
       }
 
@@ -651,7 +762,7 @@
           <a href="${art.link}" target="_blank" class="news-title">${art.title}</a>
           <div class="news-summary">${art.summary}</div>
           <div class="news-footer">
-            <span style="color:#94a3b8; font-size:0.75rem; text-transform:uppercase;">Topic: ${art.category}</span>
+            <span style="color:#fcd34d; font-size:0.75rem; text-transform:uppercase;">Topic: ${art.category}</span>
             <a href="${art.link}" target="_blank" class="news-link">Full Article ↗</a>
           </div>
         `;
@@ -733,13 +844,8 @@
       updateChessStatus();
     }
 
-    function removeChessHighlights() {
-      $('#chess-board .square-55d63').removeClass('highlight-target');
-    }
-
-    function highlightSquare(square) {
-      $('#chess-board .square-' + square).addClass('highlight-target');
-    }
+    function removeChessHighlights() { $('#chess-board .square-55d63').removeClass('highlight-target'); }
+    function highlightSquare(square) { $('#chess-board .square-' + square).addClass('highlight-target'); }
 
     function onDragStart(source, piece) {
       if (chessGame.game_over()) return false;
@@ -762,18 +868,13 @@
       window.setTimeout(makeCPUMove, 300);
     }
 
-    function onSnapEnd() {
-      chessBoard.position(chessGame.fen());
-    }
+    function onSnapEnd() { chessBoard.position(chessGame.fen()); }
 
     function updateChessStatus() {
       let status = 'You (White) vs Super CPU (Black)';
       if (chessGame.in_checkmate()) {
-        if (chessGame.turn() === 'w') {
-          showPopup('💔 Game Over', 'The CPU Checkmated you!', resetChess);
-        } else {
-          showPopup('🏆 Checkmate!', '🎉 You defeated the Chess CPU!', resetChess);
-        }
+        if (chessGame.turn() === 'w') showPopup('💔 Game Over', 'The CPU Checkmated you!', resetChess);
+        else showPopup('🏆 Checkmate!', '🎉 You defeated the Chess CPU!', resetChess);
       } else if (chessGame.in_draw()) {
         showPopup('🤝 Draw!', 'The game ended in a stalemate.', resetChess);
       } else if (chessGame.in_check()) {
@@ -818,7 +919,7 @@
       checkersTurn = 'blue';
       selectedPiece = null;
       validMoves = [];
-      document.getElementById('checkers-status').textContent = 'Your turn! Tap a Blue piece to move.';
+      document.getElementById('checkers-status').textContent = 'Your turn! Tap an Amber piece to move.';
 
       const boardEl = document.getElementById('checkers-board');
       boardEl.innerHTML = '';
@@ -948,7 +1049,7 @@
       const available = allJumps.length > 0 ? allJumps : allCPUMoves;
 
       if (available.length === 0) {
-        showPopup('🏆 Checkers Victory!', 'You captured all CPU pieces!', initCheckers);
+        showPopup('🍁 Checkers Victory!', 'You captured all CPU pieces!', initCheckers);
         return;
       }
 
@@ -961,7 +1062,7 @@
       renderCheckers();
 
       checkersTurn = 'blue';
-      document.getElementById('checkers-status').textContent = 'Your turn! Tap a Blue piece to move.';
+      document.getElementById('checkers-status').textContent = 'Your turn! Tap an Amber piece to move.';
     }
 
     // -------------------------------------------------------------
@@ -1062,18 +1163,18 @@
     }
 
     // -------------------------------------------------------------
-    // 5. MAHJONG SOLITAIRE ENGINE
+    // 5. MAHJONG SOLITAIRE ENGINE (AUTUMN THEMED)
     // -------------------------------------------------------------
     let mahjongInitialized = false;
     let mahjongTiles = [];
     let selectedMahjongTile = null;
 
-    const MAHJONG_SYMBOLS = ['🦅', '🗽', '🔔', '📜', '🎆', '🇺🇸', '🏛️', '⚓', '⚔️', '🎩', '🎺', '🛡️'];
+    const MAHJONG_SYMBOLS = ['🍁', '🍂', '🎃', '🌾', '🍎', '🌰', '☕', '🥧', '🦉', '🦊', '🍄', '🧣'];
 
     function initMahjong() {
       mahjongInitialized = true;
       selectedMahjongTile = null;
-      document.getElementById('mahjong-status').textContent = 'Tap matching free tiles to clear the board!';
+      document.getElementById('mahjong-status').textContent = 'Tap matching free autumn tiles to clear the board!';
       
       const layout = [
         {l:0, r:1, c:1}, {l:0, r:1, c:2}, {l:0, r:1, c:3}, {l:0, r:1, c:4}, {l:0, r:1, c:5}, {l:0, r:1, c:6},
@@ -1139,7 +1240,7 @@
         selectedMahjongTile.matched = true;
         selectedMahjongTile = null;
         if (mahjongTiles.every(tile => tile.matched)) {
-          showPopup('🀄 Mahjong Master!', 'You cleared all tiles!', initMahjong);
+          showPopup('🀄 Mahjong Master!', 'You cleared all autumn tiles!', initMahjong);
         }
       } else {
         selectedMahjongTile = t;
@@ -1156,7 +1257,349 @@
     }
 
     // -------------------------------------------------------------
-    // 6. CHOMP (THE POISON GRID)
+    // 6. 2048 HARVEST GAME ENGINE
+    // -------------------------------------------------------------
+    let g2048Initialized = false;
+    let g2048Board = [];
+    let g2048Score = 0;
+    let g2048Best = 0;
+
+    const G2048_ICONS = {
+      2: "🍃", 4: "🍎", 8: "🌰", 16: "🎃", 32: "🥧",
+      64: "🌾", 128: "🦃", 256: "🌽", 512: "🥐", 1024: "🍯", 2048: "👑"
+    };
+
+    function init2048() {
+      g2048Initialized = true;
+      g2048Board = Array(4).fill(null).map(() => Array(4).fill(0));
+      g2048Score = 0;
+      add2048Tile();
+      add2048Tile();
+      render2048();
+    }
+
+    function add2048Tile() {
+      let empty = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (g2048Board[r][c] === 0) empty.push({ r, c });
+        }
+      }
+      if (empty.length > 0) {
+        let spot = empty[Math.floor(Math.random() * empty.length)];
+        g2048Board[spot.r][spot.c] = Math.random() < 0.9 ? 2 : 4;
+      }
+    }
+
+    function render2048() {
+      const container = document.getElementById("g2048-board");
+      container.innerHTML = "";
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          let val = g2048Board[r][c];
+          let cell = document.createElement("div");
+          cell.className = "g2048-cell";
+          if (val > 0) {
+            cell.dataset.val = val;
+            cell.innerHTML = `<span class="icon">${G2048_ICONS[val] || "🌟"}</span><span class="val">${val}</span>`;
+          }
+          container.appendChild(cell);
+        }
+      }
+      if (g2048Score > g2048Best) g2048Best = g2048Score;
+      document.getElementById("g2048-status").textContent = `Score: ${g2048Score} | Best: ${g2048Best}`;
+    }
+
+    function slide2048(row) {
+      let arr = row.filter(val => val !== 0);
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+          arr[i] *= 2;
+          g2048Score += arr[i];
+          arr[i + 1] = 0;
+        }
+      }
+      arr = arr.filter(val => val !== 0);
+      while (arr.length < 4) arr.push(0);
+      return arr;
+    }
+
+    function move2048(dir) {
+      if (!g2048Initialized || !document.getElementById("g2048-view").classList.contains("active")) return;
+      let prev = JSON.stringify(g2048Board);
+
+      if (dir === "LEFT") {
+        for (let r = 0; r < 4; r++) g2048Board[r] = slide2048(g2048Board[r]);
+      } else if (dir === "RIGHT") {
+        for (let r = 0; r < 4; r++) g2048Board[r] = slide2048(g2048Board[r].reverse()).reverse();
+      } else if (dir === "UP") {
+        for (let c = 0; c < 4; c++) {
+          let col = [g2048Board[0][c], g2048Board[1][c], g2048Board[2][c], g2048Board[3][c]];
+          col = slide2048(col);
+          for (let r = 0; r < 4; r++) g2048Board[r][c] = col[r];
+        }
+      } else if (dir === "DOWN") {
+        for (let c = 0; c < 4; c++) {
+          let col = [g2048Board[0][c], g2048Board[1][c], g2048Board[2][c], g2048Board[3][c]].reverse();
+          col = slide2048(col).reverse();
+          for (let r = 0; r < 4; r++) g2048Board[r][c] = col[r];
+        }
+      }
+
+      if (prev !== JSON.stringify(g2048Board)) {
+        add2048Tile();
+        render2048();
+        check2048GameOver();
+      }
+    }
+
+    function check2048GameOver() {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (g2048Board[r][c] === 0) return;
+          if (c < 3 && g2048Board[r][c] === g2048Board[r][c + 1]) return;
+          if (r < 3 && g2048Board[r][c] === g2048Board[r + 1][c]) return;
+        }
+      }
+      showPopup("🌾 Harvest Full!", `Game Over! Final Score: ${g2048Score}`, init2048);
+    }
+
+    // -------------------------------------------------------------
+    // 7. HARVEST SNAKE GAME ENGINE
+    // -------------------------------------------------------------
+    let snakeInitialized = false;
+    let snake = [];
+    let snakeDir = "RIGHT";
+    let snakeNextDir = "RIGHT";
+    let snakeFood = { x: 0, y: 0 };
+    let snakeScore = 0;
+    let snakeTimer = null;
+    const gridCount = 17;
+    const gridPixelSize = 20;
+
+    function initSnake() {
+      snakeInitialized = true;
+      if (snakeTimer) clearInterval(snakeTimer);
+      snake = [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }];
+      snakeDir = "RIGHT";
+      snakeNextDir = "RIGHT";
+      snakeScore = 0;
+      placeSnakeFood();
+      document.getElementById("snake-status").textContent = `Acorns Gathered: ${snakeScore}`;
+      snakeTimer = setInterval(updateSnake, 120);
+    }
+
+    function setSnakeDir(dir) {
+      const opposites = { UP: "DOWN", DOWN: "UP", LEFT: "RIGHT", RIGHT: "LEFT" };
+      if (opposites[dir] !== snakeDir) snakeNextDir = dir;
+    }
+
+    function placeSnakeFood() {
+      snakeFood = {
+        x: Math.floor(Math.random() * gridCount),
+        y: Math.floor(Math.random() * gridCount)
+      };
+    }
+
+    function updateSnake() {
+      if (!document.getElementById("snake-view").classList.contains("active")) return;
+      snakeDir = snakeNextDir;
+      let head = { ...snake[0] };
+
+      if (snakeDir === "UP") head.y--;
+      else if (snakeDir === "DOWN") head.y++;
+      else if (snakeDir === "LEFT") head.x--;
+      else if (snakeDir === "RIGHT") head.x++;
+
+      if (head.x < 0 || head.x >= gridCount || head.y < 0 || head.y >= gridCount ||
+          snake.some(p => p.x === head.x && p.y === head.y)) {
+        clearInterval(snakeTimer);
+        showPopup("🐍 Snake Collided!", `You collected ${snakeScore} acorns!`, initSnake);
+        return;
+      }
+
+      snake.unshift(head);
+      if (head.x === snakeFood.x && head.y === snakeFood.y) {
+        snakeScore += 1;
+        document.getElementById("snake-status").textContent = `Acorns Gathered: ${snakeScore}`;
+        placeSnakeFood();
+      } else {
+        snake.pop();
+      }
+
+      renderSnake();
+    }
+
+    function renderSnake() {
+      const canvas = document.getElementById("snake-canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#1c0a00";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Grid Lines
+      ctx.strokeStyle = "#2c1202";
+      for (let i = 0; i <= gridCount; i++) {
+        ctx.beginPath(); ctx.moveTo(i * gridPixelSize, 0); ctx.lineTo(i * gridPixelSize, canvas.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * gridPixelSize); ctx.lineTo(canvas.width, i * gridPixelSize); ctx.stroke();
+      }
+
+      // Draw Food
+      ctx.font = "16px serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🌰", snakeFood.x * gridPixelSize + 10, snakeFood.y * gridPixelSize + 10);
+
+      // Draw Snake
+      snake.forEach((part, idx) => {
+        ctx.fillStyle = idx === 0 ? "#ea580c" : "#f59e0b";
+        ctx.beginPath();
+        ctx.roundRect(part.x * gridPixelSize + 1, part.y * gridPixelSize + 1, gridPixelSize - 2, gridPixelSize - 2, 4);
+        ctx.fill();
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 8. ACORN SWEEPER (MINESWEEPER) ENGINE
+    // -------------------------------------------------------------
+    let sweeperInitialized = false;
+    let swGrid = [];
+    let swFlagMode = false;
+    const SW_ROWS = 9, SW_COLS = 9, SW_MINES = 10;
+
+    function initSweeper() {
+      sweeperInitialized = true;
+      document.getElementById("sweeper-status").textContent = `Acorns Remaining: ${SW_MINES} 🌰`;
+      const board = document.getElementById("sweeper-board");
+      board.innerHTML = "";
+      swGrid = [];
+
+      for (let r = 0; r < SW_ROWS; r++) {
+        let row = [];
+        for (let c = 0; c < SW_COLS; c++) {
+          row.push({ isMine: false, revealed: false, flagged: false, count: 0 });
+        }
+        swGrid.push(row);
+      }
+
+      let planted = 0;
+      while (planted < SW_MINES) {
+        let r = Math.floor(Math.random() * SW_ROWS);
+        let c = Math.floor(Math.random() * SW_COLS);
+        if (!swGrid[r][c].isMine) {
+          swGrid[r][c].isMine = true;
+          planted++;
+        }
+      }
+
+      for (let r = 0; r < SW_ROWS; r++) {
+        for (let c = 0; c < SW_COLS; c++) {
+          if (!swGrid[r][c].isMine) {
+            let cnt = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                let nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < SW_ROWS && nc >= 0 && nc < SW_COLS && swGrid[nr][nc].isMine) cnt++;
+              }
+            }
+            swGrid[r][c].count = cnt;
+          }
+        }
+      }
+
+      for (let r = 0; r < SW_ROWS; r++) {
+        for (let c = 0; c < SW_COLS; c++) {
+          let cell = document.createElement("div");
+          cell.className = "sw-cell";
+          cell.dataset.r = r; cell.dataset.c = c;
+          cell.addEventListener("click", () => handleSweeperClick(r, c));
+          cell.addEventListener("contextmenu", (e) => { e.preventDefault(); handleSweeperRightClick(r, c); });
+          board.appendChild(cell);
+        }
+      }
+      renderSweeper();
+    }
+
+    function toggleSweeperFlagMode() {
+      swFlagMode = !swFlagMode;
+      document.getElementById("sw-flag-btn").textContent = swFlagMode ? "Mode: Flag 🚩" : "Mode: Reveal 🔍";
+    }
+
+    function handleSweeperClick(r, c) {
+      if (swFlagMode) { handleSweeperRightClick(r, c); return; }
+      let cell = swGrid[r][c];
+      if (cell.flagged || cell.revealed) return;
+
+      if (cell.isMine) {
+        cell.revealed = true;
+        renderSweeper();
+        showPopup("💥 Rotten Acorn Exploded!", "You hit a rotten acorn mine!", initSweeper);
+        return;
+      }
+
+      revealSweeperCell(r, c);
+      renderSweeper();
+      checkSweeperWin();
+    }
+
+    function handleSweeperRightClick(r, c) {
+      let cell = swGrid[r][c];
+      if (cell.revealed) return;
+      cell.flagged = !cell.flagged;
+      renderSweeper();
+    }
+
+    function revealSweeperCell(r, c) {
+      if (r < 0 || r >= SW_ROWS || c < 0 || c >= SW_COLS) return;
+      let cell = swGrid[r][c];
+      if (cell.revealed || cell.flagged) return;
+
+      cell.revealed = true;
+      if (cell.count === 0 && !cell.isMine) {
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr !== 0 || dc !== 0) revealSweeperCell(r + dr, c + dc);
+          }
+        }
+      }
+    }
+
+    function renderSweeper() {
+      let flaggedCount = 0;
+      document.querySelectorAll(".sw-cell").forEach(el => {
+        let r = parseInt(el.dataset.r);
+        let c = parseInt(el.dataset.c);
+        let cell = swGrid[r][c];
+
+        el.className = "sw-cell";
+        el.textContent = "";
+
+        if (cell.revealed) {
+          el.classList.add("revealed");
+          if (cell.isMine) el.textContent = "💥";
+          else if (cell.count > 0) el.textContent = cell.count;
+        } else if (cell.flagged) {
+          el.classList.add("flagged");
+          el.textContent = "🚩";
+          flaggedCount++;
+        }
+      });
+      document.getElementById("sweeper-status").textContent = `Acorns Remaining: ${SW_MINES - flaggedCount} 🌰`;
+    }
+
+    function checkSweeperWin() {
+      let won = true;
+      for (let r = 0; r < SW_ROWS; r++) {
+        for (let c = 0; c < SW_COLS; c++) {
+          if (!swGrid[r][c].isMine && !swGrid[r][c].revealed) won = false;
+        }
+      }
+      if (won) {
+        showPopup("🌾 Grid Harvested!", "You successfully swept all safe acorns!", initSweeper);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 9. CHOMP (THE POISON GRID)
     // -------------------------------------------------------------
     let chompInitialized = false;
     let chompState = [];
@@ -1182,7 +1625,7 @@
             tile.classList.add('poison');
             tile.textContent = '💀';
           } else if (chompState[r][c]) {
-            tile.textContent = '🍫';
+            tile.textContent = '🥧';
           }
           tile.addEventListener('click', () => handleChompClick(r, c));
           board.appendChild(tile);
@@ -1225,7 +1668,7 @@
       }
 
       if (availableMoves.length === 0) {
-        showPopup('🎉 Victory!', 'CPU was forced to eat the poison skull!', initChomp);
+        showPopup('🍁 Victory!', 'CPU was forced to eat the poison skull!', initChomp);
         return;
       }
 
@@ -1238,7 +1681,7 @@
     }
 
     // -------------------------------------------------------------
-    // 7. PEG SOLITAIRE
+    // 10. PEG SOLITAIRE
     // -------------------------------------------------------------
     let pegInitialized = false;
     let pegState = [];
@@ -1259,7 +1702,7 @@
       pegInitialized = true;
       selectedPeg = null;
       pegTargets = [];
-      document.getElementById('peg-status').textContent = 'Jump pegs to remove them. Goal: Leave 1 peg!';
+      document.getElementById('peg-status').textContent = 'Jump acorns to remove them. Goal: Leave 1 acorn!';
       pegState = PEG_BOARD_LAYOUT.map(row => [...row]);
       renderPegBoard();
     }
@@ -1330,19 +1773,19 @@
       }
 
       if (count === 1) {
-        showPopup('⭐ Genius!', 'You cleared the board with 1 peg left!', initPeg);
+        showPopup('🍁 Autumn Genius!', 'You cleared the board with 1 acorn left!', initPeg);
       }
     }
 
     // -------------------------------------------------------------
-    // 8. LIGHTS OUT PUZZLE
+    // 11. LIGHTS OUT PUZZLE
     // -------------------------------------------------------------
     let lightsInitialized = false;
     let lightsState = [];
 
     function initLights() {
       lightsInitialized = true;
-      document.getElementById('lights-status').textContent = 'Turn off all the glowing stars!';
+      document.getElementById('lights-status').textContent = 'Turn off all the glowing autumn leaves!';
       lightsState = Array(5).fill(null).map(() => Array(5).fill(false));
 
       for (let i = 0; i < 10; i++) {
@@ -1369,7 +1812,7 @@
 
       const allOff = lightsState.every(row => row.every(val => !val));
       if (allOff) {
-        showPopup('🌟 Lights Out Solved!', 'You turned off all the stars!', initLights);
+        showPopup('🍂 Lights Out Solved!', 'You turned off all the autumn leaves!', initLights);
       }
     }
 
@@ -1380,7 +1823,7 @@
         for (let c = 0; c < 5; c++) {
           const btn = document.createElement('div');
           btn.className = `light-btn ${lightsState[r][c] ? 'on' : ''}`;
-          btn.textContent = lightsState[r][c] ? '⭐' : '•';
+          btn.textContent = lightsState[r][c] ? '🍁' : '🍂';
           btn.addEventListener('click', () => handleLightClick(r, c));
           board.appendChild(btn);
         }
@@ -1388,12 +1831,12 @@
     }
 
     // -------------------------------------------------------------
-    // 9. CHECKAWORDS (WORDLE) LOGIC
+    // 12. CHECKAWORDS (WORDLE) LOGIC - AUTUMN THEMED
     // -------------------------------------------------------------
     const WORDS = {
-      5: ["STARS", "BRAVE", "GLORY", "EAGLE", "VALOR", "PRIDE", "MARCH", "RIGHT", "PEACE", "TRUTH"],
-      6: ["UNITED", "NATION", "BANNER", "SPIRIT", "COLONY", "PARADE", "STATES", "HEROES", "HONORS", "PLEDGE"],
-      7: ["LIBERTY", "FREEDOM", "AMERICA", "PATRIOT", "JUSTICE", "REPUBLIC", "HISTORY", "PIONEER", "TRIUMPH"]
+      5: ["LEAFY", "ACORN", "CIDER", "CHILL", "FEAST", "APPLE", "MAIZE", "CRISP", "SPICE", "PECAN"],
+      6: ["AUTUMN", "SQUASH", "FROSTY", "WALNUT", "TIMBER", "NATURE", "SEASON", "BREEZY", "SPICED", "YELLOW"],
+      7: ["PUMPKIN", "HARVEST", "SWEATER", "ORCHARD", "FOLIAGE", "WEATHER", "CRIMSON", "FALLING", "OUTDOOR", "BONFIRE"]
     };
 
     let wordLength = 7;
@@ -1477,6 +1920,16 @@
         if (e.key === "Enter") handleWordInput("ENTER");
         else if (e.key === "Backspace") handleWordInput("DEL");
         else if (e.key.match(/^[a-zA-Z]$/)) handleWordInput(e.key.toUpperCase());
+      } else if (document.getElementById("g2048-view").classList.contains("active")) {
+        if (e.key === "ArrowLeft") move2048("LEFT");
+        else if (e.key === "ArrowRight") move2048("RIGHT");
+        else if (e.key === "ArrowUp") move2048("UP");
+        else if (e.key === "ArrowDown") move2048("DOWN");
+      } else if (document.getElementById("snake-view").classList.contains("active")) {
+        if (e.key === "ArrowLeft") setSnakeDir("LEFT");
+        else if (e.key === "ArrowRight") setSnakeDir("RIGHT");
+        else if (e.key === "ArrowUp") setSnakeDir("UP");
+        else if (e.key === "ArrowDown") setSnakeDir("DOWN");
       }
     });
 
@@ -1528,10 +1981,10 @@
 
       if (currentGuess === secretWord) {
         isGameOver = true;
-        setTimeout(() => showPopup('🎉 Wordle Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
+        setTimeout(() => showPopup('🍂 Wordle Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
       } else if (currentAttempt === maxAttempts - 1) {
         isGameOver = true;
-        setTimeout(() => showPopup('💔 Out of Guesses', `Today's secret word was: ${secretWord}`, initWordle), 400);
+        setTimeout(() => showPopup('💔 Out of Guesses', `Today's autumn secret word was: ${secretWord}`, initWordle), 400);
       } else {
         currentAttempt++;
         currentGuess = "";
