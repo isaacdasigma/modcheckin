@@ -48,6 +48,22 @@
       text-shadow: 0 0 12px rgba(234, 88, 12, 0.6); 
     }
 
+    /* Daily Streak Counter */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2c1202;
+      border: 1px solid #ea580c;
+      color: #fde68a;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-top: 6px;
+      box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
+    }
+
     /* Navigation Bar */
     .game-nav {
       display: flex;
@@ -59,7 +75,7 @@
       padding: 6px;
       border-radius: 25px;
       border: 1px solid #5c2707;
-      max-width: 680px;
+      max-width: 720px;
     }
     .nav-btn {
       background: transparent;
@@ -323,6 +339,34 @@
       border-color: #fde68a; box-shadow: 0 0 16px rgba(249, 115, 22, 0.8);
     }
 
+    /* LEADERBOARD TABLE STYLES */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #2c1202;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #5c2707;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.2);
+    }
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #5c2707;
+    }
+    .leaderboard-table th {
+      background: #3b1703;
+      color: #f59e0b;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+    .leaderboard-table tr:hover { background: #3b1703; }
+    .rank-badge {
+      font-weight: bold;
+      color: #ea580c;
+    }
+
     /* NEWS FEED STYLES */
     .news-container { width: 100%; display: flex; flex-direction: column; gap: 10px; }
     .news-search-bar input {
@@ -396,11 +440,13 @@
       <div class="a250-badge-inner">🍁 Autumn Harvest 🌾</div>
     </div>
     <h1>CHECKAWORDS</h1>
+    <div class="streak-badge" id="streak-display">🔥 Daily Streak: 0 Days</div>
   </header>
 
   <!-- Navigation -->
   <div class="game-nav">
     <button class="nav-btn active" onclick="switchTab('wordle')">Checkawords</button>
+    <button class="nav-btn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
     <button class="nav-btn" onclick="switchTab('news')">📰 Daily Wire</button>
     <button class="nav-btn" onclick="switchTab('chess')">Chess</button>
     <button class="nav-btn" onclick="switchTab('checkers')">Checkers</button>
@@ -424,6 +470,24 @@
     <div class="status-box" id="wordle-msg"></div>
     <div id="grid"></div>
     <div id="keyboard"></div>
+  </div>
+
+  <!-- LEADERBOARD VIEW -->
+  <div id="leaderboard-view" class="game-view">
+    <div class="status-box">🏆 Autumn Harvest High Scores</div>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Record</th>
+          <th>Rank</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <!-- Populated via JS -->
+      </tbody>
+    </table>
+    <button class="action-btn" onclick="resetLeaderboard()" style="margin-top: 15px;">Reset Local Scores</button>
   </div>
 
   <!-- UNBIASED NEWS OUTLET -->
@@ -561,7 +625,110 @@
 
   <script>
     // -------------------------------------------------------------
-    // EASY DAILY NEWS CURATION ARRAY (MANUAL OVERRIDE/OFFLINE FALLBACK)
+    // DAILY STREAK & LEADERBOARD LOGIC
+    // -------------------------------------------------------------
+    function initStreakSystem() {
+      const today = new Date().toISOString().slice(0, 10);
+      let lastPlayed = localStorage.getItem('checkawords_last_date');
+      let streak = parseInt(localStorage.getItem('checkawords_streak') || '0', 10);
+
+      if (lastPlayed) {
+        const lastDate = new Date(lastPlayed);
+        const currDate = new Date(today);
+        const diffDays = Math.round((currDate - lastDate) / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 1) {
+          streak = 0;
+          localStorage.setItem('checkawords_streak', '0');
+        }
+      }
+      renderStreak(streak);
+    }
+
+    function recordDailyActivity() {
+      const today = new Date().toISOString().slice(0, 10);
+      let lastPlayed = localStorage.getItem('checkawords_last_date');
+      let streak = parseInt(localStorage.getItem('checkawords_streak') || '0', 10);
+
+      if (lastPlayed !== today) {
+        if (lastPlayed) {
+          const lastDate = new Date(lastPlayed);
+          const currDate = new Date(today);
+          const diffDays = Math.round((currDate - lastDate) / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 1) streak += 1;
+          else streak = 1;
+        } else {
+          streak = 1;
+        }
+
+        localStorage.setItem('checkawords_last_date', today);
+        localStorage.setItem('checkawords_streak', streak.toString());
+      }
+      renderStreak(streak);
+    }
+
+    function renderStreak(streak) {
+      document.getElementById('streak-display').textContent = `🔥 Daily Streak: ${streak} Day${streak === 1 ? '' : 's'}`;
+    }
+
+    const DEFAULT_SCORES = { g2048: 0, snake: 0, wordle: 0, chess: 0, checkers: 0, sudoku: 0 };
+
+    function getScores() {
+      const saved = localStorage.getItem('checkawords_scores');
+      return saved ? JSON.parse(saved) : { ...DEFAULT_SCORES };
+    }
+
+    function updateScore(game, score, increment = false) {
+      const scores = getScores();
+      if (increment) {
+        scores[game] = (scores[game] || 0) + score;
+      } else {
+        if (!scores[game] || score > scores[game]) {
+          scores[game] = score;
+        }
+      }
+      localStorage.setItem('checkawords_scores', JSON.stringify(scores));
+      renderLeaderboard();
+      recordDailyActivity();
+    }
+
+    function renderLeaderboard() {
+      const scores = getScores();
+      const tbody = document.getElementById('leaderboard-body');
+      if (!tbody) return;
+
+      const games = [
+        { key: 'g2048', name: '2048 Harvest', unit: 'Pts' },
+        { key: 'snake', name: 'Harvest Snake', unit: 'Acorns' },
+        { key: 'wordle', name: 'Checkawords Wins', unit: 'Wins' },
+        { key: 'chess', name: 'Chess Wins', unit: 'Wins' },
+        { key: 'checkers', name: 'Checkers Wins', unit: 'Wins' },
+        { key: 'sudoku', name: 'Sudoku Solved', unit: 'Boards' }
+      ];
+
+      tbody.innerHTML = '';
+      games.forEach(g => {
+        const val = scores[g.key] || 0;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${g.name}</strong></td>
+          <td>${val} ${g.unit}</td>
+          <td><span class="rank-badge">${val > 0 ? '🏆 Master' : '🌱 Novice'}</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function resetLeaderboard() {
+      if (confirm('Reset all saved high scores?')) {
+        localStorage.removeItem('checkawords_scores');
+        renderLeaderboard();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // DAILY NEWS CURATION ARRAY
     // -------------------------------------------------------------
     const DAILY_CURATED_NEWS = [
       {
@@ -612,9 +779,7 @@
       if (modalCallback) { modalCallback(); modalCallback = null; }
     }
 
-    // -------------------------------------------------------------
-    // 1. TAB SWITCHING SYSTEM
-    // -------------------------------------------------------------
+    // TAB SWITCHING SYSTEM
     function switchTab(gameKey) {
       document.querySelectorAll('.game-view').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -622,6 +787,10 @@
       if (gameKey === 'wordle') {
         document.getElementById('wordle-view').classList.add('active');
         event.target.classList.add('active');
+      } else if (gameKey === 'leaderboard') {
+        document.getElementById('leaderboard-view').classList.add('active');
+        event.target.classList.add('active');
+        renderLeaderboard();
       } else if (gameKey === 'news') {
         document.getElementById('news-view').classList.add('active');
         event.target.classList.add('active');
@@ -770,9 +939,7 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // 2. CHESS ENGINE
-    // -------------------------------------------------------------
+    // CHESS ENGINE
     let chessGame, chessBoard;
     const pieceValues = { p: 10, r: 50, n: 30, b: 35, q: 90, k: 1000 };
 
@@ -874,7 +1041,10 @@
       let status = 'You (White) vs Super CPU (Black)';
       if (chessGame.in_checkmate()) {
         if (chessGame.turn() === 'w') showPopup('💔 Game Over', 'The CPU Checkmated you!', resetChess);
-        else showPopup('🏆 Checkmate!', '🎉 You defeated the Chess CPU!', resetChess);
+        else {
+          updateScore('chess', 1, true);
+          showPopup('🏆 Checkmate!', '🎉 You defeated the Chess CPU!', resetChess);
+        }
       } else if (chessGame.in_draw()) {
         showPopup('🤝 Draw!', 'The game ended in a stalemate.', resetChess);
       } else if (chessGame.in_check()) {
@@ -905,9 +1075,7 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // 3. CHECKERS ENGINE
-    // -------------------------------------------------------------
+    // CHECKERS ENGINE
     let checkersBoardInitialized = false;
     let checkersState = [];
     let selectedPiece = null;
@@ -1049,6 +1217,7 @@
       const available = allJumps.length > 0 ? allJumps : allCPUMoves;
 
       if (available.length === 0) {
+        updateScore('checkers', 1, true);
         showPopup('🍁 Checkers Victory!', 'You captured all CPU pieces!', initCheckers);
         return;
       }
@@ -1065,9 +1234,7 @@
       document.getElementById('checkers-status').textContent = 'Your turn! Tap an Amber piece to move.';
     }
 
-    // -------------------------------------------------------------
-    // 4. SUDOKU GAME ENGINE
-    // -------------------------------------------------------------
+    // SUDOKU GAME ENGINE
     let sudokuInitialized = false;
     let sudokuDiff = 'easy';
     let sudokuSolution = [];
@@ -1155,6 +1322,7 @@
 
       if (!playerSudoku.includes(0)) {
         if (playerSudoku.every((val, idx) => val === sudokuSolution[idx])) {
+          updateScore('sudoku', 1, true);
           showPopup('🧩 Sudoku Solved!', 'You successfully finished the board!', initSudoku);
         } else {
           document.getElementById('sudoku-status').textContent = '⚠️ Some numbers are incorrect!';
@@ -1162,9 +1330,7 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // 5. MAHJONG SOLITAIRE ENGINE (AUTUMN THEMED)
-    // -------------------------------------------------------------
+    // MAHJONG SOLITAIRE ENGINE
     let mahjongInitialized = false;
     let mahjongTiles = [];
     let selectedMahjongTile = null;
@@ -1240,6 +1406,7 @@
         selectedMahjongTile.matched = true;
         selectedMahjongTile = null;
         if (mahjongTiles.every(tile => tile.matched)) {
+          recordDailyActivity();
           showPopup('🀄 Mahjong Master!', 'You cleared all autumn tiles!', initMahjong);
         }
       } else {
@@ -1256,9 +1423,7 @@
       renderMahjong();
     }
 
-    // -------------------------------------------------------------
-    // 6. 2048 HARVEST GAME ENGINE
-    // -------------------------------------------------------------
+    // 2048 HARVEST GAME ENGINE
     let g2048Initialized = false;
     let g2048Board = [];
     let g2048Score = 0;
@@ -1361,12 +1526,11 @@
           if (r < 3 && g2048Board[r][c] === g2048Board[r + 1][c]) return;
         }
       }
+      updateScore('g2048', g2048Score);
       showPopup("🌾 Harvest Full!", `Game Over! Final Score: ${g2048Score}`, init2048);
     }
 
-    // -------------------------------------------------------------
-    // 7. HARVEST SNAKE GAME ENGINE
-    // -------------------------------------------------------------
+    // HARVEST SNAKE GAME ENGINE
     let snakeInitialized = false;
     let snake = [];
     let snakeDir = "RIGHT";
@@ -1414,6 +1578,7 @@
       if (head.x < 0 || head.x >= gridCount || head.y < 0 || head.y >= gridCount ||
           snake.some(p => p.x === head.x && p.y === head.y)) {
         clearInterval(snakeTimer);
+        updateScore('snake', snakeScore);
         showPopup("🐍 Snake Collided!", `You collected ${snakeScore} acorns!`, initSnake);
         return;
       }
@@ -1436,20 +1601,17 @@
       ctx.fillStyle = "#1c0a00";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Grid Lines
       ctx.strokeStyle = "#2c1202";
       for (let i = 0; i <= gridCount; i++) {
         ctx.beginPath(); ctx.moveTo(i * gridPixelSize, 0); ctx.lineTo(i * gridPixelSize, canvas.height); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, i * gridPixelSize); ctx.lineTo(canvas.width, i * gridPixelSize); ctx.stroke();
       }
 
-      // Draw Food
       ctx.font = "16px serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("🌰", snakeFood.x * gridPixelSize + 10, snakeFood.y * gridPixelSize + 10);
 
-      // Draw Snake
       snake.forEach((part, idx) => {
         ctx.fillStyle = idx === 0 ? "#ea580c" : "#f59e0b";
         ctx.beginPath();
@@ -1458,9 +1620,7 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // 8. ACORN SWEEPER (MINESWEEPER) ENGINE
-    // -------------------------------------------------------------
+    // ACORN SWEEPER ENGINE
     let sweeperInitialized = false;
     let swGrid = [];
     let swFlagMode = false;
@@ -1594,13 +1754,12 @@
         }
       }
       if (won) {
+        recordDailyActivity();
         showPopup("🌾 Grid Harvested!", "You successfully swept all safe acorns!", initSweeper);
       }
     }
 
-    // -------------------------------------------------------------
-    // 9. CHOMP (THE POISON GRID)
-    // -------------------------------------------------------------
+    // CHOMP
     let chompInitialized = false;
     let chompState = [];
     let chompTurn = 'player';
@@ -1668,6 +1827,7 @@
       }
 
       if (availableMoves.length === 0) {
+        recordDailyActivity();
         showPopup('🍁 Victory!', 'CPU was forced to eat the poison skull!', initChomp);
         return;
       }
@@ -1680,9 +1840,7 @@
       document.getElementById('chomp-status').textContent = 'Your turn! Tap a tile to chomp!';
     }
 
-    // -------------------------------------------------------------
-    // 10. PEG SOLITAIRE
-    // -------------------------------------------------------------
+    // PEG SOLITAIRE
     let pegInitialized = false;
     let pegState = [];
     let selectedPeg = null;
@@ -1773,13 +1931,12 @@
       }
 
       if (count === 1) {
+        recordDailyActivity();
         showPopup('🍁 Autumn Genius!', 'You cleared the board with 1 acorn left!', initPeg);
       }
     }
 
-    // -------------------------------------------------------------
-    // 11. LIGHTS OUT PUZZLE
-    // -------------------------------------------------------------
+    // LIGHTS OUT
     let lightsInitialized = false;
     let lightsState = [];
 
@@ -1812,6 +1969,7 @@
 
       const allOff = lightsState.every(row => row.every(val => !val));
       if (allOff) {
+        recordDailyActivity();
         showPopup('🍂 Lights Out Solved!', 'You turned off all the autumn leaves!', initLights);
       }
     }
@@ -1830,9 +1988,7 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // 12. CHECKAWORDS (WORDLE) LOGIC - AUTUMN THEMED
-    // -------------------------------------------------------------
+    // CHECKAWORDS (WORDLE) LOGIC
     const WORDS = {
       5: ["LEAFY", "ACORN", "CIDER", "CHILL", "FEAST", "APPLE", "MAIZE", "CRISP", "SPICE", "PECAN"],
       6: ["AUTUMN", "SQUASH", "FROSTY", "WALNUT", "TIMBER", "NATURE", "SEASON", "BREEZY", "SPICED", "YELLOW"],
@@ -1981,6 +2137,7 @@
 
       if (currentGuess === secretWord) {
         isGameOver = true;
+        updateScore('wordle', 1, true);
         setTimeout(() => showPopup('🍂 Wordle Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
       } else if (currentAttempt === maxAttempts - 1) {
         isGameOver = true;
@@ -1991,7 +2148,8 @@
       }
     }
 
-    // Initialize Checkawords on start
+    // Initialize Streak & Checkawords on start
+    initStreakSystem();
     initWordle();
   </script>
 </body>
