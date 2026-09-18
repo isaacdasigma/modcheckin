@@ -1,0 +1,122 @@
+:root {
+  --bg-color: #1c130e;
+  --card-bg: #2a1e17;
+  --panel-bg: #140d09;
+  --accent: #e67e22;
+  --accent-hover: #d35400;
+  --text: #f3e5ab;
+  --text-muted: #b39b82;
+  --success: #27ae60;
+  --error: #c0392b;
+  --border-radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 1rem;
+}
+
+.arcade-card {
+  background: var(--card-bg);
+  border: 2px solid var(--accent);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.card-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+}
+
+.card-header p {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.word-input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--panel-bg);
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+}
+
+input[type="text"]:focus {
+  border-color: #f39c12;
+  box-shadow: 0 0 5px rgba(243, 156, 18, 0.4);
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+.badge {
+  padding: 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.badge.valid { background: var(--success); color: #fff; }
+.badge.invalid { background: var(--error); color: #fff; }
+.badge.loading { background: var(--accent); color: #fff; }
+
+.details-panel {
+  background: var(--panel-bg);
+  border: 1px solid rgba(230, 126, 34, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.details-panel h2 {
+  margin-top: 0;
+  color: var(--accent);
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.hidden {
+  display: none !important;
+}
