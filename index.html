@@ -1,43 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Check-a-Word | Autumn Arcade</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkawords - Autumn Harvest</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <main class="arcade-card">
-    <header class="card-header">
-      <h1>🍁 Check-a-Word</h1>
-      <p>Validate dictionary words and score points based on length!</p>
-    </header>
 
-    <section class="game-container">
-      <form id="word-form" class="word-input-group">
-        <input 
-          type="text" 
-          id="word-input" 
-          placeholder="Enter a word..." 
-          autocomplete="off"
-          required 
-        />
-        <button type="submit" id="check-btn">Check Word</button>
-      </form>
+  <header>
+    <div class="a250-badge"><div class="a250-badge-inner">🍁 Autumn Harvest 🌾</div></div>
+    <h1>CHECKAWORDS</h1>
+    <div class="streak-badge" id="streak-display">🔥 Daily Streak: 0 Days</div>
+  </header>
 
-      <div id="result-badge" class="badge hidden" aria-live="polite"></div>
+  <!-- Navigation Bar with Relative Links -->
+  <nav class="game-nav">
+    <a href="index.html" class="nav-link active">Checkawords</a>
+    <a href="leaderboard.html" class="nav-link">🏆 Leaderboard</a>
+    <a href="news.html" class="nav-link">📰 Daily Wire</a>
+    <a href="chess.html" class="nav-link">Chess</a>
+    <a href="checkers.html" class="nav-link">Checkers</a>
+    <a href="sudoku.html" class="nav-link">Sudoku</a>
+  </nav>
 
-      <div id="word-details" class="details-panel hidden">
-        <h2 id="definition-title"></h2>
-        <p id="definition-text"></p>
-        <div class="stats-row">
-          <span id="score-val">Points: 0</span>
-          <span id="length-val">Length: 0</span>
-        </div>
-      </div>
-    </section>
+  <!-- Wordle Interface -->
+  <main class="game-container">
+    <div class="mode-selector">
+      <button class="mode-btn" onclick="setWordMode(5)">5 Letters</button>
+      <button class="mode-btn" onclick="setWordMode(6)">6 Letters</button>
+      <button class="mode-btn active" onclick="setWordMode(7)">7 Letters</button>
+    </div>
+    <div class="status-box" id="wordle-msg"></div>
+    <div id="grid"></div>
+    <div id="keyboard"></div>
   </main>
 
-  <script type="module" src="word-checker.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/wordle.js"></script>
 </body>
 </html>
