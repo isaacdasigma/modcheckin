@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess - Checkawords</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>CHECKAWORDS CHESS</h1>
+  </header>
+
+  <nav class="game-nav">
+    <a href="index.html" class="nav-link">Checkawords</a>
+    <a href="chess.html" class="nav-link active">Chess</a>
+    <a href="checkers.html" class="nav-link">Checkers</a>
+  </nav>
+
+  <main class="game-container">
+    <div class="status-box" id="chess-status">You (White) vs Super CPU (Black)</div>
+    <div id="chess-board"></div>
+    <button class="action-btn" onclick="resetChess()">New Chess Game</button>
+  </main>
+
+  <!-- Chess External Dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+  
+  <script src="js/core.js"></script>
+  <script src="js/chess.js"></script>
+</body>
+</html>
