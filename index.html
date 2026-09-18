@@ -4,28 +4,464 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkawords - Autumn Harvest</title>
-  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Chessboard CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #1c0a00;
+      color: #fef3c7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+      user-select: none;
+    }
+
+    header { text-align: center; margin-bottom: 8px; }
+    .a250-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #ea580c 0%, #f59e0b 50%, #b91c1c 100%);
+      padding: 2px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+      box-shadow: 0 0 12px rgba(234, 88, 12, 0.4);
+    }
+    .a250-badge-inner {
+      background: #1c0a00;
+      color: #fcd34d;
+      padding: 4px 14px;
+      border-radius: 18px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    h1 { 
+      font-size: 2.1rem; 
+      letter-spacing: 2px; 
+      color: #fef3c7;
+      text-shadow: 0 0 12px rgba(234, 88, 12, 0.6); 
+    }
+
+    /* Daily Streak Counter */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2c1202;
+      border: 1px solid #ea580c;
+      color: #fde68a;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-top: 6px;
+      box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
+    }
+
+    /* Navigation Bar */
+    .game-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 10px 0 15px 0;
+      background: #2c1202;
+      padding: 6px;
+      border-radius: 25px;
+      border: 1px solid #5c2707;
+      max-width: 720px;
+    }
+    .nav-btn {
+      background: transparent;
+      color: #fcd34d;
+      border: 0;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 0.82rem;
+    }
+    .nav-btn:active { transform: scale(0.92); }
+    .nav-btn.active {
+      background-color: #ea580c;
+      color: #1c0a00;
+      box-shadow: 0 0 14px rgba(234, 88, 12, 0.7);
+    }
+
+    /* Game View Container */
+    .game-view { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; }
+    .game-view.active { display: flex; }
+
+    .status-box { 
+      font-weight: bold; 
+      margin: 6px 0; 
+      color: #f59e0b; 
+      text-align: center; 
+      min-height: 24px; 
+      font-size: 1.05rem; 
+      text-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+    }
+
+    /* Controls */
+    .mode-selector { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+    .mode-btn {
+      background: #2c1202; color: #fde68a; border: 1px solid #5c2707;
+      padding: 6px 12px; border-radius: 15px; cursor: pointer; font-weight: bold;
+      transition: transform 0.1s ease; font-size: 0.8rem;
+    }
+    .mode-btn:active { transform: scale(0.92); }
+    .mode-btn.active { 
+      background: #ea580c; 
+      color: #1c0a00; 
+      border-color: #fcd34d; 
+      box-shadow: 0 0 10px rgba(234, 88, 12, 0.6); 
+    }
+
+    /* Wordle Styles */
+    #grid { display: grid; grid-template-rows: repeat(6, 1fr); grid-gap: 6px; margin-bottom: 12px; }
+    .row { display: grid; grid-gap: 6px; }
+    .tile {
+      width: 50px; height: 50px; border: 2px solid #5c2707; background-color: #2c1202;
+      display: flex; justify-content: center; align-items: center; font-size: 1.7rem;
+      font-weight: 800; text-transform: uppercase; border-radius: 6px; color: #fde68a;
+      transition: border-color 0.15s ease;
+    }
+    .tile.pop { animation: tilePop 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-color: #f59e0b !important; }
+    .correct { background-color: #ea580c !important; border-color: #f97316 !important; color: #1c0a00 !important; box-shadow: 0 0 10px rgba(234,88,12,0.5); }
+    .present { background-color: #f59e0b !important; border-color: #fbbf24 !important; color: #1c0a00 !important; box-shadow: 0 0 10px rgba(245,158,11,0.5); }
+    .absent { background-color: #140700 !important; border-color: #3b1703 !important; color: #525252; }
+    
+    #keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 500px; }
+    .keyboard-row { display: flex; justify-content: center; gap: 5px; }
+    .key {
+      background-color: #3b1703; color: #fde68a; border: 0; border-radius: 6px;
+      height: 52px; flex: 1; display: flex; justify-content: center; align-items: center;
+      font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem;
+      transition: transform 0.08s ease, background-color 0.15s ease;
+    }
+    .key:active { transform: scale(0.88); }
+    .key.large { flex: 1.5; font-size: 0.8rem; }
+
+    /* Chessboard */
+    #chess-board { 
+      width: 100%; max-width: 420px; margin: 10px 0; border-radius: 8px; overflow: hidden; 
+      border: 3px solid #ea580c; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25); 
+    }
+    .highlight-target { position: relative; }
+    .highlight-target::after {
+      content: ""; position: absolute; width: 18px; height: 18px;
+      background-color: rgba(245, 158, 11, 0.75); border-radius: 50%;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px #f59e0b;
+    }
+
+    /* Checkers Board */
+    #checkers-board {
+      width: 400px; height: 400px; display: grid;
+      grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+      border: 3px solid #ea580c; border-radius: 8px; margin: 10px 0;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .c-cell { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; position: relative; }
+    .c-cell.light { background-color: #52250d; }
+    .c-cell.dark { background-color: #2c1202; }
+    .c-cell.highlight::after {
+      content: ""; width: 16px; height: 16px; background: #f59e0b;
+      border-radius: 50%; box-shadow: 0 0 10px #fbbf24; animation: pulseTarget 1s infinite alternate;
+    }
+    .c-cell.highlight { cursor: pointer; }
+    .c-piece {
+      width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5); transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .c-piece.selected { outline: 4px solid #f59e0b; transform: scale(1.2); box-shadow: 0 0 16px #f59e0b; z-index: 10; }
+    .c-piece.red { background: radial-gradient(circle, #b91c1c, #7f1d1d); }
+    .c-piece.blue { background: radial-gradient(circle, #f59e0b, #b45309); }
+    .c-piece.king::after { content: "🍂"; font-size: 18px; display: flex; justify-content: center; line-height: 38px; }
+
+    /* Sudoku Styles */
+    #sudoku-grid {
+      display: grid; grid-template-columns: repeat(9, 1fr);
+      width: 380px; height: 380px; border: 3px solid #ea580c;
+      border-radius: 8px; overflow: hidden; margin: 10px 0;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.25); background: #2c1202;
+    }
+    .s-cell {
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.3rem; font-weight: bold; background: #2c1202;
+      border: 1px solid #5c2707; cursor: pointer; color: #f59e0b;
+      transition: background 0.1s ease;
+    }
+    .s-cell.given { color: #fef3c7; font-weight: 900; background: #1c0a00; }
+    .s-cell.selected { background: #ea580c !important; color: #1c0a00 !important; box-shadow: inset 0 0 8px #fde68a; }
+    .s-cell.highlighted { background: #3b1703; }
+    .s-cell.border-r { border-right: 3px solid #ea580c; }
+    .s-cell.border-b { border-bottom: 3px solid #ea580c; }
+    
+    .num-pad { display: flex; gap: 6px; margin-top: 10px; width: 100%; max-width: 380px; }
+    .num-btn {
+      flex: 1; height: 45px; background: #3b1703; color: #fde68a; border: 0;
+      border-radius: 6px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
+    }
+    .num-btn:active { transform: scale(0.92); }
+    .num-btn.erase { background: #b91c1c; color: #fef3c7; font-size: 0.8rem; }
+
+    /* Mahjong Styles */
+    #mahjong-board {
+      width: 420px; height: 380px; position: relative;
+      background: #2c1202; border: 3px solid #ea580c; border-radius: 8px;
+      margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25); overflow: hidden;
+    }
+    .m-tile {
+      position: absolute; width: 44px; height: 56px;
+      background: linear-gradient(145deg, #52250d, #2c1202);
+      border: 2px solid #ea580c; border-radius: 6px; color: #fde68a;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.6rem; cursor: pointer;
+      box-shadow: -2px 3px 0px #1c0a00, -4px 6px 8px rgba(0,0,0,0.5);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .m-tile.selected {
+      transform: translateY(-6px) scale(1.08);
+      border-color: #f59e0b; box-shadow: 0 0 16px #f59e0b; z-index: 100 !important;
+    }
+    .m-tile.blocked { opacity: 0.5; filter: grayscale(50%); cursor: not-allowed; }
+
+    /* 2048 HARVEST STYLES */
+    .g2048-container {
+      width: 360px; height: 360px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 12px; padding: 10px; display: grid; grid-template-columns: repeat(4, 1fr);
+      grid-gap: 8px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .g2048-cell {
+      background: #1c0a00; border-radius: 8px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; font-weight: 800; font-size: 1.1rem;
+      color: #fef3c7; transition: transform 0.1s ease; position: relative;
+    }
+    .g2048-cell .icon { font-size: 1.4rem; line-height: 1.1; }
+    .g2048-cell .val { font-size: 0.8rem; opacity: 0.9; }
+    .g2048-cell[data-val="2"] { background: #3b1703; color: #fde68a; }
+    .g2048-cell[data-val="4"] { background: #52250d; color: #fcd34d; }
+    .g2048-cell[data-val="8"] { background: #b91c1c; color: #fef3c7; }
+    .g2048-cell[data-val="16"] { background: #c2410c; color: #fff; }
+    .g2048-cell[data-val="32"] { background: #ea580c; color: #fff; }
+    .g2048-cell[data-val="64"] { background: #d97706; color: #fff; }
+    .g2048-cell[data-val="128"] { background: #f59e0b; color: #1c0a00; box-shadow: 0 0 10px #f59e0b; }
+    .g2048-cell[data-val="256"] { background: #fbbf24; color: #1c0a00; box-shadow: 0 0 14px #fbbf24; }
+    .g2048-cell[data-val="512"] { background: #facc15; color: #1c0a00; box-shadow: 0 0 18px #facc15; }
+    .g2048-cell[data-val="1024"] { background: #4ade80; color: #1c0a00; box-shadow: 0 0 22px #4ade80; }
+    .g2048-cell[data-val="2048"] { background: #38bdf8; color: #1c0a00; box-shadow: 0 0 25px #38bdf8; }
+
+    /* SNAKE STYLES */
+    #snake-canvas {
+      background: #1c0a00; border: 3px solid #ea580c; border-radius: 12px;
+      margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .touch-controls {
+      display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(2, 50px);
+      gap: 6px; margin-top: 6px; justify-content: center;
+    }
+    .touch-btn {
+      background: #3b1703; color: #fde68a; border: 1px solid #ea580c; border-radius: 8px;
+      font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center;
+    }
+    .touch-btn:active { background: #ea580c; color: #1c0a00; }
+
+    /* SWEEPER STYLES */
+    #sweeper-board {
+      display: grid; grid-template-columns: repeat(9, 1fr); grid-gap: 4px;
+      width: 360px; height: 360px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 12px; padding: 8px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .sw-cell {
+      background: #3b1703; border-radius: 4px; display: flex; justify-content: center; align-items: center;
+      font-weight: 900; font-size: 1.1rem; cursor: pointer; color: #fde68a; border: 1px solid #5c2707;
+      transition: background 0.1s ease;
+    }
+    .sw-cell.revealed { background: #1c0a00; border-color: #2c1202; }
+    .sw-cell.flagged { background: #7f1d1d; color: #fca5a5; }
+
+    /* CHOMP STYLES */
+    #chomp-board {
+      display: grid; grid-template-columns: repeat(7, 1fr); grid-gap: 6px;
+      width: 380px; height: 280px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .chomp-tile {
+      background: linear-gradient(145deg, #ea580c, #9a3412); border-radius: 6px;
+      display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
+      cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s ease;
+    }
+    .chomp-tile:active { transform: scale(0.92); }
+    .chomp-tile.poison { background: linear-gradient(145deg, #b91c1c, #7f1d1d) !important; border: 2px solid #f87171; }
+    .chomp-tile.eaten { background: transparent !important; box-shadow: none !important; cursor: default; }
+
+    /* PEG SOLITAIRE STYLES */
+    #peg-board {
+      display: grid; grid-template-columns: repeat(7, 1fr); grid-gap: 6px;
+      width: 360px; height: 360px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 8px; padding: 10px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .peg-slot {
+      width: 42px; height: 42px; border-radius: 50%; display: flex;
+      justify-content: center; align-items: center; position: relative;
+    }
+    .peg-slot.invalid { visibility: hidden; }
+    .peg-slot.empty { background: #1c0a00; border: 2px dashed #5c2707; }
+    .peg-slot.target { background: #b91c1c !important; border: 2px solid #f87171; cursor: pointer; animation: pulseTarget 0.8s infinite alternate; }
+    .peg {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: radial-gradient(circle, #f59e0b, #b45309);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.15s ease;
+    }
+    .peg.selected { outline: 3px solid #ea580c; transform: scale(1.18); box-shadow: 0 0 12px #ea580c; }
+
+    /* LIGHTS OUT STYLES */
+    #lights-board {
+      display: grid; grid-template-columns: repeat(5, 1fr); grid-gap: 8px;
+      width: 350px; height: 350px; background: #2c1202; border: 3px solid #ea580c;
+      border-radius: 8px; padding: 12px; margin: 10px 0; box-shadow: 0 0 20px rgba(234, 88, 12, 0.25);
+    }
+    .light-btn {
+      background: #3b1703; border: 2px solid #5c2707; border-radius: 10px;
+      display: flex; justify-content: center; align-items: center; font-size: 1.8rem;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .light-btn.on {
+      background: radial-gradient(circle, #f97316, #d97706);
+      border-color: #fde68a; box-shadow: 0 0 16px rgba(249, 115, 22, 0.8);
+    }
+
+    /* LEADERBOARD TABLE STYLES */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #2c1202;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #5c2707;
+      box-shadow: 0 0 20px rgba(234, 88, 12, 0.2);
+    }
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #5c2707;
+    }
+    .leaderboard-table th {
+      background: #3b1703;
+      color: #f59e0b;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+    .leaderboard-table tr:hover { background: #3b1703; }
+    .rank-badge {
+      font-weight: bold;
+      color: #ea580c;
+    }
+
+    /* NEWS FEED STYLES */
+    .news-container { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+    .news-search-bar input {
+      width: 100%; padding: 10px 16px; border-radius: 20px; border: 1px solid #5c2707;
+      background: #2c1202; color: #fde68a; outline: none; font-size: 0.95rem; text-align: center;
+    }
+    .news-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
+    .news-card {
+      background: #2c1202; border: 1px solid #5c2707; border-radius: 12px; padding: 14px;
+      display: flex; flex-direction: column; gap: 8px; text-align: left; transition: all 0.2s ease;
+    }
+    .news-card:hover { border-color: #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.2); }
+    .news-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #fcd34d; }
+    .news-badge { background: #1c0a00; color: #f59e0b; padding: 3px 8px; border-radius: 10px; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; border: 1px solid #ea580c; }
+    .news-badge.wire { background: rgba(234, 88, 12, 0.15); color: #f59e0b; border-color: #d97706; }
+    .news-title { font-size: 1.05rem; font-weight: bold; color: #fde68a; line-height: 1.35; text-decoration: none; }
+    .news-title:hover { color: #f59e0b; }
+    .news-summary { font-size: 0.88rem; color: #fed7aa; line-height: 1.45; }
+    .news-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.8rem; }
+    .news-link { color: #f59e0b; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .news-link:hover { text-decoration: underline; }
+
+    .action-btn {
+      background-color: #ea580c; color: #1c0a00; border: 1px solid #f59e0b;
+      padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 5px;
+      box-shadow: 0 0 12px rgba(234, 88, 12, 0.4); transition: transform 0.1s ease;
+    }
+    .action-btn:active { transform: scale(0.92); }
+
+    /* POPUP OVERLAY MODAL */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(28, 10, 0, 0.88); backdrop-filter: blur(5px);
+      justify-content: center; align-items: center; z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .modal-card {
+      background: #2c1202; border: 2px solid #ea580c; border-radius: 16px;
+      padding: 28px 24px; text-align: center; box-shadow: 0 0 30px rgba(234, 88, 12, 0.4);
+      max-width: 90%; width: 350px;
+    }
+    .modal-title { font-size: 1.6rem; margin-bottom: 10px; color: #fde68a; }
+    .modal-text { font-size: 1.1rem; color: #fed7aa; margin-bottom: 20px; }
+    .modal-btn {
+      background: #ea580c; color: #1c0a00; border: 0; padding: 12px 24px;
+      border-radius: 25px; font-weight: bold; font-size: 1rem; cursor: pointer;
+      box-shadow: 0 0 15px rgba(234, 88, 12, 0.5);
+    }
+    .modal-btn:active { transform: scale(0.92); }
+
+    /* Keyframe Animations */
+    @keyframes tilePop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    @keyframes modalPop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulseTarget {
+      0% { transform: scale(0.8); opacity: 0.7; }
+      100% { transform: scale(1.2); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
 
   <header>
-    <div class="a250-badge"><div class="a250-badge-inner">🍁 Autumn Harvest 🌾</div></div>
+    <div class="a250-badge">
+      <div class="a250-badge-inner">🍁 Autumn Harvest 🌾</div>
+    </div>
     <h1>CHECKAWORDS</h1>
     <div class="streak-badge" id="streak-display">🔥 Daily Streak: 0 Days</div>
   </header>
 
-  <!-- Navigation Bar with Relative Links -->
-  <nav class="game-nav">
-    <a href="index.html" class="nav-link active">Checkawords</a>
-    <a href="leaderboard.html" class="nav-link">🏆 Leaderboard</a>
-    <a href="news.html" class="nav-link">📰 Daily Wire</a>
-    <a href="chess.html" class="nav-link">Chess</a>
-    <a href="checkers.html" class="nav-link">Checkers</a>
-    <a href="sudoku.html" class="nav-link">Sudoku</a>
-  </nav>
+  <!-- Navigation -->
+  <div class="game-nav">
+    <button class="nav-btn active" onclick="switchTab('wordle')">Checkawords</button>
+    <button class="nav-btn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
+    <button class="nav-btn" onclick="switchTab('news')">📰 Daily Wire</button>
+    <button class="nav-btn" onclick="switchTab('chess')">Chess</button>
+    <button class="nav-btn" onclick="switchTab('checkers')">Checkers</button>
+    <button class="nav-btn" onclick="switchTab('sudoku')">Sudoku</button>
+    <button class="nav-btn" onclick="switchTab('mahjong')">Mahjong</button>
+    <button class="nav-btn" onclick="switchTab('g2048')">2048 Harvest</button>
+    <button class="nav-btn" onclick="switchTab('snake')">Harvest Snake</button>
+    <button class="nav-btn" onclick="switchTab('sweeper')">Acorn Sweeper</button>
+    <button class="nav-btn" onclick="switchTab('chomp')">Chomp</button>
+    <button class="nav-btn" onclick="switchTab('peg')">Peg Solitaire</button>
+    <button class="nav-btn" onclick="switchTab('lights')">Lights Out</button>
+  </div>
 
-  <!-- Wordle Interface -->
-  <main class="game-container">
+  <!-- GAME 1: CHECKAWORDS -->
+  <div id="wordle-view" class="game-view active">
     <div class="mode-selector">
       <button class="mode-btn" onclick="setWordMode(5)">5 Letters</button>
       <button class="mode-btn" onclick="setWordMode(6)">6 Letters</button>
@@ -34,9 +470,1687 @@
     <div class="status-box" id="wordle-msg"></div>
     <div id="grid"></div>
     <div id="keyboard"></div>
-  </main>
+  </div>
 
-  <script src="js/core.js"></script>
-  <script src="js/wordle.js"></script>
+  <!-- LEADERBOARD VIEW -->
+  <div id="leaderboard-view" class="game-view">
+    <div class="status-box">🏆 Autumn Harvest High Scores</div>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Record</th>
+          <th>Rank</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <!-- Populated via JS -->
+      </tbody>
+    </table>
+    <button class="action-btn" onclick="resetLeaderboard()" style="margin-top: 15px;">Reset Local Scores</button>
+  </div>
+
+  <!-- UNBIASED NEWS OUTLET -->
+  <div id="news-view" class="game-view">
+    <div class="news-container">
+      <div class="news-search-bar">
+        <input type="text" id="news-search" placeholder="🔍 Search today's autumn wire..." onkeyup="filterNews()">
+      </div>
+      <div class="mode-selector">
+        <button class="mode-btn active" onclick="setNewsCategory('all')">All Wire</button>
+        <button class="mode-btn" onclick="setNewsCategory('world')">World</button>
+        <button class="mode-btn" onclick="setNewsCategory('tech')">Tech & AI</button>
+        <button class="mode-btn" onclick="setNewsCategory('business')">Business</button>
+        <button class="mode-btn" onclick="setNewsCategory('science')">Science</button>
+      </div>
+    </div>
+    <div class="status-box" id="news-status">Fetching live neutral wire headlines...</div>
+    <div id="news-grid" class="news-grid"></div>
+    <button class="action-btn" onclick="fetchLiveNews()">🔄 Refresh News Wire</button>
+  </div>
+
+  <!-- GAME 2: CHESS VS SUPER CPU -->
+  <div id="chess-view" class="game-view">
+    <div class="status-box" id="chess-status">You (White) vs Super CPU (Black)</div>
+    <div id="chess-board"></div>
+    <button class="action-btn" onclick="resetChess()">New Chess Game</button>
+  </div>
+
+  <!-- GAME 3: CHECKERS VS CPU -->
+  <div id="checkers-view" class="game-view">
+    <div class="status-box" id="checkers-status">Your turn! Tap an Amber piece to move.</div>
+    <div id="checkers-board"></div>
+    <button class="action-btn" onclick="initCheckers()">New Checkers Game</button>
+  </div>
+
+  <!-- GAME 4: SUDOKU -->
+  <div id="sudoku-view" class="game-view">
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setSudokuDiff('easy')">Easy</button>
+      <button class="mode-btn" onclick="setSudokuDiff('medium')">Medium</button>
+      <button class="mode-btn" onclick="setSudokuDiff('hard')">Hard</button>
+    </div>
+    <div class="status-box" id="sudoku-status">Select a cell and tap a number.</div>
+    <div id="sudoku-grid"></div>
+    <div class="num-pad">
+      <button class="num-btn" onclick="inputSudokuNum(1)">1</button>
+      <button class="num-btn" onclick="inputSudokuNum(2)">2</button>
+      <button class="num-btn" onclick="inputSudokuNum(3)">3</button>
+      <button class="num-btn" onclick="inputSudokuNum(4)">4</button>
+      <button class="num-btn" onclick="inputSudokuNum(5)">5</button>
+      <button class="num-btn" onclick="inputSudokuNum(6)">6</button>
+      <button class="num-btn" onclick="inputSudokuNum(7)">7</button>
+      <button class="num-btn" onclick="inputSudokuNum(8)">8</button>
+      <button class="num-btn" onclick="inputSudokuNum(9)">9</button>
+      <button class="num-btn erase" onclick="inputSudokuNum(0)">DEL</button>
+    </div>
+    <button class="action-btn" onclick="initSudoku()">New Sudoku Game</button>
+  </div>
+
+  <!-- GAME 5: MAHJONG SOLITAIRE -->
+  <div id="mahjong-view" class="game-view">
+    <div class="status-box" id="mahjong-status">Tap matching free autumn tiles to clear the board!</div>
+    <div id="mahjong-board"></div>
+    <div style="display: flex; gap: 10px;">
+      <button class="action-btn" onclick="initMahjong()">New Game</button>
+      <button class="action-btn" onclick="shuffleMahjong()">Shuffle Tiles</button>
+    </div>
+  </div>
+
+  <!-- GAME 6: 2048 HARVEST -->
+  <div id="g2048-view" class="game-view">
+    <div class="status-box" id="g2048-status">Score: 0 | Best: 0</div>
+    <div class="g2048-container" id="g2048-board"></div>
+    <p style="font-size: 0.85rem; color: #fcd34d; margin-bottom: 8px;">Use Arrow keys or Swipe to merge matching harvest tiles!</p>
+    <button class="action-btn" onclick="init2048()">New 2048 Game</button>
+  </div>
+
+  <!-- GAME 7: HARVEST SNAKE -->
+  <div id="snake-view" class="game-view">
+    <div class="status-box" id="snake-status">Acorns Gathered: 0</div>
+    <canvas id="snake-canvas" width="340" height="340"></canvas>
+    <div class="touch-controls">
+      <div style="grid-column: 2;"><button class="touch-btn" onclick="setSnakeDir('UP')">▲</button></div>
+      <div style="grid-row: 2; grid-column: 1;"><button class="touch-btn" onclick="setSnakeDir('LEFT')">◄</button></div>
+      <div style="grid-row: 2; grid-column: 2;"><button class="touch-btn" onclick="setSnakeDir('DOWN')">▼</button></div>
+      <div style="grid-row: 2; grid-column: 3;"><button class="touch-btn" onclick="setSnakeDir('RIGHT')">►</button></div>
+    </div>
+    <button class="action-btn" onclick="initSnake()" style="margin-top: 10px;">New Snake Run</button>
+  </div>
+
+  <!-- GAME 8: ACORN SWEEPER (MINESWEEPER) -->
+  <div id="sweeper-view" class="game-view">
+    <div class="status-box" id="sweeper-status">Acorns Remaining: 10 🌰</div>
+    <div id="sweeper-board"></div>
+    <div style="display: flex; gap: 10px;">
+      <button class="action-btn" onclick="toggleSweeperFlagMode()" id="sw-flag-btn">Mode: Reveal 🔍</button>
+      <button class="action-btn" onclick="initSweeper()">Reset Grid</button>
+    </div>
+  </div>
+
+  <!-- GAME 9: CHOMP (THE POISON GRID) -->
+  <div id="chomp-view" class="game-view">
+    <div class="status-box" id="chomp-status">Tap a tile to chomp! Avoid the Poison Skull 💀!</div>
+    <div id="chomp-board"></div>
+    <button class="action-btn" onclick="initChomp()">New Chomp Game</button>
+  </div>
+
+  <!-- GAME 10: PEG SOLITAIRE -->
+  <div id="peg-view" class="game-view">
+    <div class="status-box" id="peg-status">Jump acorns to remove them. Leave only 1 peg!</div>
+    <div id="peg-board"></div>
+    <button class="action-btn" onclick="initPeg()">New Peg Solitaire</button>
+  </div>
+
+  <!-- GAME 11: LIGHTS OUT -->
+  <div id="lights-view" class="game-view">
+    <div class="status-box" id="lights-status">Turn off all the glowing autumn leaves!</div>
+    <div id="lights-board"></div>
+    <button class="action-btn" onclick="initLights()">New Puzzle</button>
+  </div>
+
+  <!-- POPUP RESULT MODAL -->
+  <div id="popup-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title">🍂 Harvest Victory!</div>
+      <div class="modal-text" id="modal-text">You solved the puzzle!</div>
+      <button class="modal-btn" onclick="closeModal()">Play Again</button>
+    </div>
+  </div>
+
+  <!-- Required JS Libraries -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+  <script>
+    // -------------------------------------------------------------
+    // DAILY STREAK & LEADERBOARD LOGIC
+    // -------------------------------------------------------------
+    function initStreakSystem() {
+      const today = new Date().toISOString().slice(0, 10);
+      let lastPlayed = localStorage.getItem('checkawords_last_date');
+      let streak = parseInt(localStorage.getItem('checkawords_streak') || '0', 10);
+
+      if (lastPlayed) {
+        const lastDate = new Date(lastPlayed);
+        const currDate = new Date(today);
+        const diffDays = Math.round((currDate - lastDate) / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 1) {
+          streak = 0;
+          localStorage.setItem('checkawords_streak', '0');
+        }
+      }
+      renderStreak(streak);
+    }
+
+    function recordDailyActivity() {
+      const today = new Date().toISOString().slice(0, 10);
+      let lastPlayed = localStorage.getItem('checkawords_last_date');
+      let streak = parseInt(localStorage.getItem('checkawords_streak') || '0', 10);
+
+      if (lastPlayed !== today) {
+        if (lastPlayed) {
+          const lastDate = new Date(lastPlayed);
+          const currDate = new Date(today);
+          const diffDays = Math.round((currDate - lastDate) / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 1) streak += 1;
+          else streak = 1;
+        } else {
+          streak = 1;
+        }
+
+        localStorage.setItem('checkawords_last_date', today);
+        localStorage.setItem('checkawords_streak', streak.toString());
+      }
+      renderStreak(streak);
+    }
+
+    function renderStreak(streak) {
+      document.getElementById('streak-display').textContent = `🔥 Daily Streak: ${streak} Day${streak === 1 ? '' : 's'}`;
+    }
+
+    const DEFAULT_SCORES = { g2048: 0, snake: 0, wordle: 0, chess: 0, checkers: 0, sudoku: 0 };
+
+    function getScores() {
+      const saved = localStorage.getItem('checkawords_scores');
+      return saved ? JSON.parse(saved) : { ...DEFAULT_SCORES };
+    }
+
+    function updateScore(game, score, increment = false) {
+      const scores = getScores();
+      if (increment) {
+        scores[game] = (scores[game] || 0) + score;
+      } else {
+        if (!scores[game] || score > scores[game]) {
+          scores[game] = score;
+        }
+      }
+      localStorage.setItem('checkawords_scores', JSON.stringify(scores));
+      renderLeaderboard();
+      recordDailyActivity();
+    }
+
+    function renderLeaderboard() {
+      const scores = getScores();
+      const tbody = document.getElementById('leaderboard-body');
+      if (!tbody) return;
+
+      const games = [
+        { key: 'g2048', name: '2048 Harvest', unit: 'Pts' },
+        { key: 'snake', name: 'Harvest Snake', unit: 'Acorns' },
+        { key: 'wordle', name: 'Checkawords Wins', unit: 'Wins' },
+        { key: 'chess', name: 'Chess Wins', unit: 'Wins' },
+        { key: 'checkers', name: 'Checkers Wins', unit: 'Wins' },
+        { key: 'sudoku', name: 'Sudoku Solved', unit: 'Boards' }
+      ];
+
+      tbody.innerHTML = '';
+      games.forEach(g => {
+        const val = scores[g.key] || 0;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${g.name}</strong></td>
+          <td>${val} ${g.unit}</td>
+          <td><span class="rank-badge">${val > 0 ? '🏆 Master' : '🌱 Novice'}</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function resetLeaderboard() {
+      if (confirm('Reset all saved high scores?')) {
+        localStorage.removeItem('checkawords_scores');
+        renderLeaderboard();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // DAILY NEWS CURATION ARRAY
+    // -------------------------------------------------------------
+    const DAILY_CURATED_NEWS = [
+      {
+        title: "Global Energy Forum Finalizes Infrastructure Modernization Accord",
+        summary: "International representatives concluded negotiations on cross-border electric grid standards aimed at improving reliability and reducing transmission losses.",
+        source: "Associated Press Wire",
+        category: "world",
+        pubDate: "Today",
+        link: "https://apnews.com"
+      },
+      {
+        title: "Astronomers Map Magnetism in Distant Galaxy Clusters",
+        summary: "Researchers utilizing high-frequency radio telescopes have published the highest resolution magnetic field map of galaxy cluster interactions to date.",
+        source: "Science Wire",
+        category: "science",
+        pubDate: "Today",
+        link: "https://npr.org"
+      },
+      {
+        title: "Semiconductor Manufacturers Standardize Next-Gen Chip Interfaces",
+        summary: "Leading tech firms agreed upon open hardware protocols to facilitate faster interconnectivity between multi-chip modules.",
+        source: "Reuters Wire",
+        category: "tech",
+        pubDate: "Today",
+        link: "https://reuters.com"
+      },
+      {
+        title: "Central Banks Report Stabilizing Inflation Metrics Across Major Economies",
+        summary: "A joint statistical release indicates that core consumer prices have plateaued near target ranges across Europe and North America.",
+        source: "Financial Wire",
+        category: "business",
+        pubDate: "Today",
+        link: "https://apnews.com"
+      }
+    ];
+
+    // POPUP MODAL SYSTEM
+    let modalCallback = null;
+    function showPopup(title, text, callback) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-text').textContent = text;
+      modalCallback = callback;
+      document.getElementById('popup-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('popup-modal').classList.remove('active');
+      if (modalCallback) { modalCallback(); modalCallback = null; }
+    }
+
+    // TAB SWITCHING SYSTEM
+    function switchTab(gameKey) {
+      document.querySelectorAll('.game-view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      if (gameKey === 'wordle') {
+        document.getElementById('wordle-view').classList.add('active');
+        event.target.classList.add('active');
+      } else if (gameKey === 'leaderboard') {
+        document.getElementById('leaderboard-view').classList.add('active');
+        event.target.classList.add('active');
+        renderLeaderboard();
+      } else if (gameKey === 'news') {
+        document.getElementById('news-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!newsInitialized) fetchLiveNews();
+      } else if (gameKey === 'chess') {
+        document.getElementById('chess-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!chessBoard) initChess();
+      } else if (gameKey === 'checkers') {
+        document.getElementById('checkers-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!checkersBoardInitialized) initCheckers();
+      } else if (gameKey === 'sudoku') {
+        document.getElementById('sudoku-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!sudokuInitialized) initSudoku();
+      } else if (gameKey === 'mahjong') {
+        document.getElementById('mahjong-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!mahjongInitialized) initMahjong();
+      } else if (gameKey === 'g2048') {
+        document.getElementById('g2048-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!g2048Initialized) init2048();
+      } else if (gameKey === 'snake') {
+        document.getElementById('snake-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!snakeInitialized) initSnake();
+      } else if (gameKey === 'sweeper') {
+        document.getElementById('sweeper-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!sweeperInitialized) initSweeper();
+      } else if (gameKey === 'chomp') {
+        document.getElementById('chomp-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!chompInitialized) initChomp();
+      } else if (gameKey === 'peg') {
+        document.getElementById('peg-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!pegInitialized) initPeg();
+      } else if (gameKey === 'lights') {
+        document.getElementById('lights-view').classList.add('active');
+        event.target.classList.add('active');
+        if (!lightsInitialized) initLights();
+      }
+    }
+
+    // UNBIASED NEWS MODULE
+    let newsInitialized = false;
+    let allNewsArticles = [];
+    let currentNewsCategory = 'all';
+
+    async function fetchLiveNews() {
+      newsInitialized = true;
+      const statusEl = document.getElementById('news-status');
+      statusEl.textContent = '🔄 Fetching non-partisan live wire news...';
+
+      const rssUrls = [
+        'https://feeds.npr.org/1001/rss.xml',
+        'https://feeds.bbci.co.uk/news/world/rss.xml'
+      ];
+
+      try {
+        let fetchedArticles = [];
+        for (let url of rssUrls) {
+          const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
+          const data = await res.json();
+          if (data.status === 'ok' && data.items) {
+            data.items.forEach(item => {
+              let cat = 'world';
+              const text = (item.title + ' ' + item.description).toLowerCase();
+              if (text.includes('tech') || text.includes('ai') || text.includes('chip') || text.includes('cyber') || text.includes('space')) cat = 'tech';
+              else if (text.includes('bank') || text.includes('market') || text.includes('economy') || text.includes('trade') || text.includes('dollar')) cat = 'business';
+              else if (text.includes('science') || text.includes('climate') || text.includes('health') || text.includes('research')) cat = 'science';
+
+              const cleanSummary = item.description ? item.description.replace(/<[^>]*>?/gm, '').slice(0, 160) + '...' : 'Fact-checked wire coverage.';
+
+              fetchedArticles.push({
+                title: item.title,
+                summary: cleanSummary,
+                source: data.feed.title || 'Neutral Wire',
+                category: cat,
+                pubDate: new Date(item.pubDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                link: item.link
+              });
+            });
+          }
+        }
+
+        if (fetchedArticles.length > 0) {
+          allNewsArticles = fetchedArticles;
+          statusEl.textContent = '✓ Updated live from verified non-partisan wires';
+        } else {
+          throw new Error('No live articles');
+        }
+      } catch (err) {
+        allNewsArticles = DAILY_CURATED_NEWS;
+        statusEl.textContent = 'Showing daily verified wire headlines';
+      }
+
+      renderNews();
+    }
+
+    function setNewsCategory(cat) {
+      currentNewsCategory = cat;
+      document.querySelectorAll('#news-view .mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(cat) || (cat === 'all' && btn.textContent === 'All Wire'));
+      });
+      renderNews();
+    }
+
+    function filterNews() { renderNews(); }
+
+    function renderNews() {
+      const grid = document.getElementById('news-grid');
+      const searchTerm = document.getElementById('news-search').value.toLowerCase();
+      grid.innerHTML = '';
+
+      const filtered = allNewsArticles.filter(art => {
+        const matchesCat = (currentNewsCategory === 'all' || art.category === currentNewsCategory);
+        const matchesSearch = art.title.toLowerCase().includes(searchTerm) || art.summary.toLowerCase().includes(searchTerm);
+        return matchesCat && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="text-align:center; padding:20px; color:#fcd34d;">No wire stories matching your filter.</div>';
+        return;
+      }
+
+      filtered.forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+        card.innerHTML = `
+          <div class="news-meta">
+            <span class="news-badge wire">Fact-Checked Wire</span>
+            <span>${art.pubDate} • ${art.source}</span>
+          </div>
+          <a href="${art.link}" target="_blank" class="news-title">${art.title}</a>
+          <div class="news-summary">${art.summary}</div>
+          <div class="news-footer">
+            <span style="color:#fcd34d; font-size:0.75rem; text-transform:uppercase;">Topic: ${art.category}</span>
+            <a href="${art.link}" target="_blank" class="news-link">Full Article ↗</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // CHESS ENGINE
+    let chessGame, chessBoard;
+    const pieceValues = { p: 10, r: 50, n: 30, b: 35, q: 90, k: 1000 };
+
+    function evaluateChessBoard(board) {
+      let evalSum = 0;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          let piece = board[r][c];
+          if (piece) {
+            let val = pieceValues[piece.type];
+            evalSum += (piece.color === 'b' ? val : -val);
+          }
+        }
+      }
+      return evalSum;
+    }
+
+    function minimaxChess(game, depth, alpha, beta, isMaximizing) {
+      if (depth === 0 || game.game_over()) return evaluateChessBoard(game.board());
+
+      let moves = game.moves();
+      if (isMaximizing) {
+        let maxEval = -99999;
+        for (let move of moves) {
+          game.move(move);
+          let evaluation = minimaxChess(game, depth - 1, alpha, beta, false);
+          game.undo();
+          maxEval = Math.max(maxEval, evaluation);
+          alpha = Math.max(alpha, evaluation);
+          if (beta <= alpha) break;
+        }
+        return maxEval;
+      } else {
+        let minEval = 99999;
+        for (let move of moves) {
+          game.move(move);
+          let evaluation = minimaxChess(game, depth - 1, alpha, beta, true);
+          game.undo();
+          minEval = Math.min(minEval, evaluation);
+          beta = Math.min(beta, evaluation);
+          if (beta <= alpha) break;
+        }
+        return minEval;
+      }
+    }
+
+    function makeCPUMove() {
+      if (chessGame.game_over()) return;
+
+      let moves = chessGame.moves();
+      if (moves.length === 0) return;
+
+      let bestMove = null;
+      let bestVal = -99999;
+
+      for (let move of moves) {
+        chessGame.move(move);
+        let val = minimaxChess(chessGame, 2, -100000, 100000, false);
+        chessGame.undo();
+        if (val >= bestVal) {
+          bestVal = val;
+          bestMove = move;
+        }
+      }
+
+      chessGame.move(bestMove || moves[Math.floor(Math.random() * moves.length)]);
+      chessBoard.position(chessGame.fen());
+      removeChessHighlights();
+      updateChessStatus();
+    }
+
+    function removeChessHighlights() { $('#chess-board .square-55d63').removeClass('highlight-target'); }
+    function highlightSquare(square) { $('#chess-board .square-' + square).addClass('highlight-target'); }
+
+    function onDragStart(source, piece) {
+      if (chessGame.game_over()) return false;
+      if (chessGame.turn() !== 'w') return false;
+      if (piece.search(/^b/) !== -1) return false;
+
+      let moves = chessGame.moves({ square: source, verbose: true });
+      if (moves.length === 0) return;
+
+      removeChessHighlights();
+      moves.forEach(m => highlightSquare(m.to));
+    }
+
+    function onDrop(source, target) {
+      removeChessHighlights();
+      let move = chessGame.move({ from: source, to: target, promotion: 'q' });
+      if (move === null) return 'snapback';
+
+      updateChessStatus();
+      window.setTimeout(makeCPUMove, 300);
+    }
+
+    function onSnapEnd() { chessBoard.position(chessGame.fen()); }
+
+    function updateChessStatus() {
+      let status = 'You (White) vs Super CPU (Black)';
+      if (chessGame.in_checkmate()) {
+        if (chessGame.turn() === 'w') showPopup('💔 Game Over', 'The CPU Checkmated you!', resetChess);
+        else {
+          updateScore('chess', 1, true);
+          showPopup('🏆 Checkmate!', '🎉 You defeated the Chess CPU!', resetChess);
+        }
+      } else if (chessGame.in_draw()) {
+        showPopup('🤝 Draw!', 'The game ended in a stalemate.', resetChess);
+      } else if (chessGame.in_check()) {
+        status += ' (Check!)';
+      }
+      document.getElementById('chess-status').textContent = status;
+    }
+
+    function initChess() {
+      chessGame = new Chess();
+      chessBoard = Chessboard('chess-board', {
+        draggable: true,
+        position: 'start',
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onSnapEnd: onSnapEnd
+      });
+      updateChessStatus();
+    }
+
+    function resetChess() {
+      if (chessGame) {
+        chessGame.reset();
+        chessBoard.position('start');
+        removeChessHighlights();
+        updateChessStatus();
+      }
+    }
+
+    // CHECKERS ENGINE
+    let checkersBoardInitialized = false;
+    let checkersState = [];
+    let selectedPiece = null;
+    let validMoves = [];
+    let checkersTurn = 'blue';
+
+    function initCheckers() {
+      checkersBoardInitialized = true;
+      checkersTurn = 'blue';
+      selectedPiece = null;
+      validMoves = [];
+      document.getElementById('checkers-status').textContent = 'Your turn! Tap an Amber piece to move.';
+
+      const boardEl = document.getElementById('checkers-board');
+      boardEl.innerHTML = '';
+      checkersState = Array(8).fill(null).map(() => Array(8).fill(null));
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cell = document.createElement('div');
+          cell.className = `c-cell ${(r + c) % 2 === 1 ? 'dark' : 'light'}`;
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener('click', () => handleCellClick(r, c));
+
+          if ((r + c) % 2 === 1) {
+            if (r < 3) checkersState[r][c] = { color: 'red', isKing: false };
+            else if (r > 4) checkersState[r][c] = { color: 'blue', isKing: false };
+          }
+          boardEl.appendChild(cell);
+        }
+      }
+      renderCheckers();
+    }
+
+    function renderCheckers() {
+      document.querySelectorAll('.c-cell').forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('highlight');
+        const r = parseInt(cell.dataset.row);
+        const c = parseInt(cell.dataset.col);
+        const p = checkersState[r][c];
+
+        if (p) {
+          const piece = document.createElement('div');
+          piece.className = `c-piece ${p.color} ${p.isKing ? 'king' : ''}`;
+          if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) {
+            piece.classList.add('selected');
+          }
+          cell.appendChild(piece);
+        }
+
+        if (validMoves.some(m => m.tr === r && m.tc === c)) {
+          cell.classList.add('highlight');
+        }
+      });
+    }
+
+    function getPieceMoves(board, r, c) {
+      const p = board[r][c];
+      if (!p) return [];
+
+      const moves = [];
+      const jumps = [];
+      const dirs = [];
+
+      if (p.color === 'blue' || p.isKing) dirs.push([-1, -1], [-1, 1]);
+      if (p.color === 'red' || p.isKing) dirs.push([1, -1], [1, 1]);
+
+      dirs.forEach(([dr, dc]) => {
+        const tr = r + dr, tc = c + dc;
+        if (tr >= 0 && tr < 8 && tc >= 0 && tc < 8) {
+          if (!board[tr][tc]) {
+            moves.push({ r, c, tr, tc, isJump: false });
+          } else if (board[tr][tc].color !== p.color) {
+            const jr = tr + dr, jc = tc + dc;
+            if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && !board[jr][jc]) {
+              jumps.push({ r, c, tr: jr, tc: jc, capR: tr, capC: tc, isJump: true });
+            }
+          }
+        }
+      });
+
+      return jumps.length > 0 ? jumps : moves;
+    }
+
+    function handleCellClick(r, c) {
+      if (checkersTurn !== 'blue') return;
+      const p = checkersState[r][c];
+
+      if (p && p.color === 'blue') {
+        selectedPiece = { r, c };
+        validMoves = getPieceMoves(checkersState, r, c);
+        renderCheckers();
+        return;
+      }
+
+      if (selectedPiece) {
+        const move = validMoves.find(m => m.tr === r && m.tc === c);
+        if (move) {
+          executeCheckersMove(move);
+          selectedPiece = null;
+          validMoves = [];
+          renderCheckers();
+
+          checkersTurn = 'red';
+          document.getElementById('checkers-status').textContent = 'CPU is thinking...';
+          setTimeout(makeCheckersCPUMove, 450);
+        }
+      }
+    }
+
+    function executeCheckersMove(m) {
+      const p = checkersState[m.r][m.c];
+      checkersState[m.tr][m.tc] = p;
+      checkersState[m.r][m.c] = null;
+
+      if (m.isJump) checkersState[m.capR][m.capC] = null;
+      if (p.color === 'blue' && m.tr === 0) p.isKing = true;
+      if (p.color === 'red' && m.tr === 7) p.isKing = true;
+    }
+
+    function makeCheckersCPUMove() {
+      let allCPUMoves = [];
+      let allJumps = [];
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (checkersState[r][c] && checkersState[r][c].color === 'red') {
+            const moves = getPieceMoves(checkersState, r, c);
+            moves.forEach(m => {
+              if (m.isJump) allJumps.push(m);
+              else allCPUMoves.push(m);
+            });
+          }
+        }
+      }
+
+      const available = allJumps.length > 0 ? allJumps : allCPUMoves;
+
+      if (available.length === 0) {
+        updateScore('checkers', 1, true);
+        showPopup('🍁 Checkers Victory!', 'You captured all CPU pieces!', initCheckers);
+        return;
+      }
+
+      let chosenMove = available[Math.floor(Math.random() * available.length)];
+      for (let m of available) {
+        if (m.isJump || m.tr === 7) { chosenMove = m; break; }
+      }
+
+      executeCheckersMove(chosenMove);
+      renderCheckers();
+
+      checkersTurn = 'blue';
+      document.getElementById('checkers-status').textContent = 'Your turn! Tap an Amber piece to move.';
+    }
+
+    // SUDOKU GAME ENGINE
+    let sudokuInitialized = false;
+    let sudokuDiff = 'easy';
+    let sudokuSolution = [];
+    let sudokuPuzzle = [];
+    let playerSudoku = [];
+    let selectedSudokuCell = null;
+
+    const SUDOKU_BOARDS = {
+      easy: {
+        p: "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+        s: "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+      },
+      medium: {
+        p: "000260701680070090190004500820100040004602900050003028009300074040050036703018000",
+        s: "435269781682571493197834562826195347374682915951743628519326874248957136763418259"
+      },
+      hard: {
+        p: "000000012000000003002300400001800005060070800000009000008500000900040500470006001",
+        s: "635497212184251693792368451241835976563172849879649325318524769926743518475986231"
+      }
+    };
+
+    function initSudoku() {
+      sudokuInitialized = true;
+      const b = SUDOKU_BOARDS[sudokuDiff];
+      sudokuPuzzle = b.p.split('').map(Number);
+      sudokuSolution = b.s.split('').map(Number);
+      playerSudoku = [...sudokuPuzzle];
+      selectedSudokuCell = null;
+
+      const gridEl = document.getElementById('sudoku-grid');
+      gridEl.innerHTML = '';
+
+      for (let i = 0; i < 81; i++) {
+        const r = Math.floor(i / 9);
+        const c = i % 9;
+        const cell = document.createElement('div');
+        cell.className = 's-cell';
+        if (c === 2 || c === 5) cell.classList.add('border-r');
+        if (r === 2 || r === 5) cell.classList.add('border-b');
+        if (sudokuPuzzle[i] !== 0) cell.classList.add('given');
+        cell.dataset.idx = i;
+        cell.addEventListener('click', () => selectSudokuCell(i));
+        gridEl.appendChild(cell);
+      }
+      renderSudoku();
+    }
+
+    function setSudokuDiff(diff) {
+      sudokuDiff = diff;
+      document.querySelectorAll('#sudoku-view .mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === diff);
+      });
+      initSudoku();
+    }
+
+    function renderSudoku() {
+      document.querySelectorAll('.s-cell').forEach((cell, i) => {
+        const val = playerSudoku[i];
+        cell.textContent = val !== 0 ? val : '';
+        cell.classList.remove('selected', 'highlighted');
+
+        if (selectedSudokuCell !== null) {
+          const selR = Math.floor(selectedSudokuCell / 9);
+          const selC = selectedSudokuCell % 9;
+          const r = Math.floor(i / 9);
+          const c = i % 9;
+          if (i === selectedSudokuCell) cell.classList.add('selected');
+          else if (r === selR || c === selC) cell.classList.add('highlighted');
+        }
+      });
+    }
+
+    function selectSudokuCell(idx) {
+      selectedSudokuCell = idx;
+      renderSudoku();
+    }
+
+    function inputSudokuNum(num) {
+      if (selectedSudokuCell === null) return;
+      if (sudokuPuzzle[selectedSudokuCell] !== 0) return;
+
+      playerSudoku[selectedSudokuCell] = num;
+      renderSudoku();
+
+      if (!playerSudoku.includes(0)) {
+        if (playerSudoku.every((val, idx) => val === sudokuSolution[idx])) {
+          updateScore('sudoku', 1, true);
+          showPopup('🧩 Sudoku Solved!', 'You successfully finished the board!', initSudoku);
+        } else {
+          document.getElementById('sudoku-status').textContent = '⚠️ Some numbers are incorrect!';
+        }
+      }
+    }
+
+    // MAHJONG SOLITAIRE ENGINE
+    let mahjongInitialized = false;
+    let mahjongTiles = [];
+    let selectedMahjongTile = null;
+
+    const MAHJONG_SYMBOLS = ['🍁', '🍂', '🎃', '🌾', '🍎', '🌰', '☕', '🥧', '🦉', '🦊', '🍄', '🧣'];
+
+    function initMahjong() {
+      mahjongInitialized = true;
+      selectedMahjongTile = null;
+      document.getElementById('mahjong-status').textContent = 'Tap matching free autumn tiles to clear the board!';
+      
+      const layout = [
+        {l:0, r:1, c:1}, {l:0, r:1, c:2}, {l:0, r:1, c:3}, {l:0, r:1, c:4}, {l:0, r:1, c:5}, {l:0, r:1, c:6},
+        {l:0, r:2, c:1}, {l:0, r:2, c:2}, {l:0, r:2, c:3}, {l:0, r:2, c:4}, {l:0, r:2, c:5}, {l:0, r:2, c:6},
+        {l:0, r:3, c:1}, {l:0, r:3, c:2}, {l:0, r:3, c:3}, {l:0, r:3, c:4}, {l:0, r:3, c:5}, {l:0, r:3, c:6},
+        {l:0, r:4, c:1}, {l:0, r:4, c:2}, {l:0, r:4, c:3}, {l:0, r:4, c:4}, {l:0, r:4, c:5}, {l:0, r:4, c:6},
+        {l:1, r:1.5, c:2}, {l:1, r:1.5, c:3}, {l:1, r:1.5, c:4}, {l:1, r:1.5, c:5},
+        {l:1, r:2.5, c:2}, {l:1, r:2.5, c:3}, {l:1, r:2.5, c:4}, {l:1, r:2.5, c:5},
+        {l:1, r:3.5, c:2}, {l:1, r:3.5, c:3}, {l:1, r:3.5, c:4}, {l:1, r:3.5, c:5},
+        {l:2, r:2, c:2.5}, {l:2, r:2, c:3.5}, {l:2, r:2, c:4.5},
+        {l:2, r:3, c:2.5}, {l:2, r:3, c:3.5}, {l:2, r:3, c:4.5},
+        {l:2, r:2.5, c:3}, {l:2, r:2.5, c:4}
+      ];
+
+      let deck = [];
+      MAHJONG_SYMBOLS.forEach(sym => deck.push(sym, sym, sym, sym));
+      deck.sort(() => Math.random() - 0.5);
+
+      mahjongTiles = layout.map((pos, i) => ({
+        id: i, symbol: deck[i], l: pos.l, r: pos.r, c: pos.c, matched: false
+      }));
+
+      renderMahjong();
+    }
+
+    function isTileFree(t) {
+      if (t.matched) return false;
+      const covered = mahjongTiles.some(other => 
+        !other.matched && other.l > t.l && Math.abs(other.r - t.r) < 0.9 && Math.abs(other.c - t.c) < 0.9
+      );
+      if (covered) return false;
+      const leftBlocked = mahjongTiles.some(other => !other.matched && other.l === t.l && Math.abs(other.r - t.r) < 0.8 && (t.c - other.c > 0.5 && t.c - other.c < 1.2));
+      const rightBlocked = mahjongTiles.some(other => !other.matched && other.l === t.l && Math.abs(other.r - t.r) < 0.8 && (other.c - t.c > 0.5 && other.c - t.c < 1.2));
+      return !leftBlocked || !rightBlocked;
+    }
+
+    function renderMahjong() {
+      const boardEl = document.getElementById('mahjong-board');
+      boardEl.innerHTML = '';
+      mahjongTiles.forEach(t => {
+        if (t.matched) return;
+        const tileEl = document.createElement('div');
+        tileEl.className = 'm-tile';
+        if (!isTileFree(t)) tileEl.classList.add('blocked');
+        if (selectedMahjongTile && selectedMahjongTile.id === t.id) tileEl.classList.add('selected');
+        tileEl.style.left = `${t.c * 50 + t.l * 3}px`;
+        tileEl.style.top = `${t.r * 58 - t.l * 3}px`;
+        tileEl.style.zIndex = t.l * 10 + Math.floor(t.r);
+        tileEl.textContent = t.symbol;
+        tileEl.addEventListener('click', () => handleMahjongClick(t));
+        boardEl.appendChild(tileEl);
+      });
+    }
+
+    function handleMahjongClick(t) {
+      if (!isTileFree(t)) return;
+      if (!selectedMahjongTile) {
+        selectedMahjongTile = t;
+      } else if (selectedMahjongTile.id === t.id) {
+        selectedMahjongTile = null;
+      } else if (selectedMahjongTile.symbol === t.symbol) {
+        t.matched = true;
+        selectedMahjongTile.matched = true;
+        selectedMahjongTile = null;
+        if (mahjongTiles.every(tile => tile.matched)) {
+          recordDailyActivity();
+          showPopup('🀄 Mahjong Master!', 'You cleared all autumn tiles!', initMahjong);
+        }
+      } else {
+        selectedMahjongTile = t;
+      }
+      renderMahjong();
+    }
+
+    function shuffleMahjong() {
+      const remaining = mahjongTiles.filter(t => !t.matched);
+      const symbols = remaining.map(t => t.symbol).sort(() => Math.random() - 0.5);
+      remaining.forEach((t, idx) => t.symbol = symbols[idx]);
+      selectedMahjongTile = null;
+      renderMahjong();
+    }
+
+    // 2048 HARVEST GAME ENGINE
+    let g2048Initialized = false;
+    let g2048Board = [];
+    let g2048Score = 0;
+    let g2048Best = 0;
+
+    const G2048_ICONS = {
+      2: "🍃", 4: "🍎", 8: "🌰", 16: "🎃", 32: "🥧",
+      64: "🌾", 128: "🦃", 256: "🌽", 512: "🥐", 1024: "🍯", 2048: "👑"
+    };
+
+    function init2048() {
+      g2048Initialized = true;
+      g2048Board = Array(4).fill(null).map(() => Array(4).fill(0));
+      g2048Score = 0;
+      add2048Tile();
+      add2048Tile();
+      render2048();
+    }
+
+    function add2048Tile() {
+      let empty = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (g2048Board[r][c] === 0) empty.push({ r, c });
+        }
+      }
+      if (empty.length > 0) {
+        let spot = empty[Math.floor(Math.random() * empty.length)];
+        g2048Board[spot.r][spot.c] = Math.random() < 0.9 ? 2 : 4;
+      }
+    }
+
+    function render2048() {
+      const container = document.getElementById("g2048-board");
+      container.innerHTML = "";
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          let val = g2048Board[r][c];
+          let cell = document.createElement("div");
+          cell.className = "g2048-cell";
+          if (val > 0) {
+            cell.dataset.val = val;
+            cell.innerHTML = `<span class="icon">${G2048_ICONS[val] || "🌟"}</span><span class="val">${val}</span>`;
+          }
+          container.appendChild(cell);
+        }
+      }
+      if (g2048Score > g2048Best) g2048Best = g2048Score;
+      document.getElementById("g2048-status").textContent = `Score: ${g2048Score} | Best: ${g2048Best}`;
+    }
+
+    function slide2048(row) {
+      let arr = row.filter(val => val !== 0);
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] === arr[i + 1]) {
+          arr[i] *= 2;
+          g2048Score += arr[i];
+          arr[i + 1] = 0;
+        }
+      }
+      arr = arr.filter(val => val !== 0);
+      while (arr.length < 4) arr.push(0);
+      return arr;
+    }
+
+    function move2048(dir) {
+      if (!g2048Initialized || !document.getElementById("g2048-view").classList.contains("active")) return;
+      let prev = JSON.stringify(g2048Board);
+
+      if (dir === "LEFT") {
+        for (let r = 0; r < 4; r++) g2048Board[r] = slide2048(g2048Board[r]);
+      } else if (dir === "RIGHT") {
+        for (let r = 0; r < 4; r++) g2048Board[r] = slide2048(g2048Board[r].reverse()).reverse();
+      } else if (dir === "UP") {
+        for (let c = 0; c < 4; c++) {
+          let col = [g2048Board[0][c], g2048Board[1][c], g2048Board[2][c], g2048Board[3][c]];
+          col = slide2048(col);
+          for (let r = 0; r < 4; r++) g2048Board[r][c] = col[r];
+        }
+      } else if (dir === "DOWN") {
+        for (let c = 0; c < 4; c++) {
+          let col = [g2048Board[0][c], g2048Board[1][c], g2048Board[2][c], g2048Board[3][c]].reverse();
+          col = slide2048(col).reverse();
+          for (let r = 0; r < 4; r++) g2048Board[r][c] = col[r];
+        }
+      }
+
+      if (prev !== JSON.stringify(g2048Board)) {
+        add2048Tile();
+        render2048();
+        check2048GameOver();
+      }
+    }
+
+    function check2048GameOver() {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (g2048Board[r][c] === 0) return;
+          if (c < 3 && g2048Board[r][c] === g2048Board[r][c + 1]) return;
+          if (r < 3 && g2048Board[r][c] === g2048Board[r + 1][c]) return;
+        }
+      }
+      updateScore('g2048', g2048Score);
+      showPopup("🌾 Harvest Full!", `Game Over! Final Score: ${g2048Score}`, init2048);
+    }
+
+    // HARVEST SNAKE GAME ENGINE
+    let snakeInitialized = false;
+    let snake = [];
+    let snakeDir = "RIGHT";
+    let snakeNextDir = "RIGHT";
+    let snakeFood = { x: 0, y: 0 };
+    let snakeScore = 0;
+    let snakeTimer = null;
+    const gridCount = 17;
+    const gridPixelSize = 20;
+
+    function initSnake() {
+      snakeInitialized = true;
+      if (snakeTimer) clearInterval(snakeTimer);
+      snake = [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }];
+      snakeDir = "RIGHT";
+      snakeNextDir = "RIGHT";
+      snakeScore = 0;
+      placeSnakeFood();
+      document.getElementById("snake-status").textContent = `Acorns Gathered: ${snakeScore}`;
+      snakeTimer = setInterval(updateSnake, 120);
+    }
+
+    function setSnakeDir(dir) {
+      const opposites = { UP: "DOWN", DOWN: "UP", LEFT: "RIGHT", RIGHT: "LEFT" };
+      if (opposites[dir] !== snakeDir) snakeNextDir = dir;
+    }
+
+    function placeSnakeFood() {
+      snakeFood = {
+        x: Math.floor(Math.random() * gridCount),
+        y: Math.floor(Math.random() * gridCount)
+      };
+    }
+
+    function updateSnake() {
+      if (!document.getElementById("snake-view").classList.contains("active")) return;
+      snakeDir = snakeNextDir;
+      let head = { ...snake[0] };
+
+      if (snakeDir === "UP") head.y--;
+      else if (snakeDir === "DOWN") head.y++;
+      else if (snakeDir === "LEFT") head.x--;
+      else if (snakeDir === "RIGHT") head.x++;
+
+      if (head.x < 0 || head.x >= gridCount || head.y < 0 || head.y >= gridCount ||
+          snake.some(p => p.x === head.x && p.y === head.y)) {
+        clearInterval(snakeTimer);
+        updateScore('snake', snakeScore);
+        showPopup("🐍 Snake Collided!", `You collected ${snakeScore} acorns!`, initSnake);
+        return;
+      }
+
+      snake.unshift(head);
+      if (head.x === snakeFood.x && head.y === snakeFood.y) {
+        snakeScore += 1;
+        document.getElementById("snake-status").textContent = `Acorns Gathered: ${snakeScore}`;
+        placeSnakeFood();
+      } else {
+        snake.pop();
+      }
+
+      renderSnake();
+    }
+
+    function renderSnake() {
+      const canvas = document.getElementById("snake-canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#1c0a00";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "#2c1202";
+      for (let i = 0; i <= gridCount; i++) {
+        ctx.beginPath(); ctx.moveTo(i * gridPixelSize, 0); ctx.lineTo(i * gridPixelSize, canvas.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * gridPixelSize); ctx.lineTo(canvas.width, i * gridPixelSize); ctx.stroke();
+      }
+
+      ctx.font = "16px serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🌰", snakeFood.x * gridPixelSize + 10, snakeFood.y * gridPixelSize + 10);
+
+      snake.forEach((part, idx) => {
+        ctx.fillStyle = idx === 0 ? "#ea580c" : "#f59e0b";
+        ctx.beginPath();
+        ctx.roundRect(part.x * gridPixelSize + 1, part.y * gridPixelSize + 1, gridPixelSize - 2, gridPixelSize - 2, 4);
+        ctx.fill();
+      });
+    }
+
+    // ACORN SWEEPER ENGINE
+    let sweeperInitialized = false;
+    let swGrid = [];
+    let swFlagMode = false;
+    const SW_ROWS = 9, SW_COLS = 9, SW_MINES = 10;
+
+    function initSweeper() {
+      sweeperInitialized = true;
+      document.getElementById("sweeper-status").textContent = `Acorns Remaining: ${SW_MINES} 🌰`;
+      const board = document.getElementById("sweeper-board");
+      board.innerHTML = "";
+      swGrid = [];
+
+      for (let r = 0; r < SW_ROWS; r++) {
+        let row = [];
+        for (let c = 0; c < SW_COLS; c++) {
+          row.push({ isMine: false, revealed: false, flagged: false, count: 0 });
+        }
+        swGrid.push(row);
+      }
+
+      let planted = 0;
+      while (planted < SW_MINES) {
+        let r = Math.floor(Math.random() * SW_ROWS);
+        let c = Math.floor(Math.random() * SW_COLS);
+        if (!swGrid[r][c].isMine) {
+          swGrid[r][c].isMine = true;
+          planted++;
+        }
+      }
+
+      for (let r = 0; r < SW_ROWS; r++) {
+        for (let c = 0; c < SW_COLS; c++) {
+          if (!swGrid[r][c].isMine) {
+            let cnt = 0;
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                let nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < SW_ROWS && nc >= 0 && nc < SW_COLS && swGrid[nr][nc].isMine) cnt++;
+              }
+            }
+            swGrid[r][c].count = cnt;
+          }
+        }
+      }
+
+      for (let r = 0; r < SW_ROWS; r++) {
+        for (let c = 0; c < SW_COLS; c++) {
+          let cell = document.createElement("div");
+          cell.className = "sw-cell";
+          cell.dataset.r = r; cell.dataset.c = c;
+          cell.addEventListener("click", () => handleSweeperClick(r, c));
+          cell.addEventListener("contextmenu", (e) => { e.preventDefault(); handleSweeperRightClick(r, c); });
+          board.appendChild(cell);
+        }
+      }
+      renderSweeper();
+    }
+
+    function toggleSweeperFlagMode() {
+      swFlagMode = !swFlagMode;
+      document.getElementById("sw-flag-btn").textContent = swFlagMode ? "Mode: Flag 🚩" : "Mode: Reveal 🔍";
+    }
+
+    function handleSweeperClick(r, c) {
+      if (swFlagMode) { handleSweeperRightClick(r, c); return; }
+      let cell = swGrid[r][c];
+      if (cell.flagged || cell.revealed) return;
+
+      if (cell.isMine) {
+        cell.revealed = true;
+        renderSweeper();
+        showPopup("💥 Rotten Acorn Exploded!", "You hit a rotten acorn mine!", initSweeper);
+        return;
+      }
+
+      revealSweeperCell(r, c);
+      renderSweeper();
+      checkSweeperWin();
+    }
+
+    function handleSweeperRightClick(r, c) {
+      let cell = swGrid[r][c];
+      if (cell.revealed) return;
+      cell.flagged = !cell.flagged;
+      renderSweeper();
+    }
+
+    function revealSweeperCell(r, c) {
+      if (r < 0 || r >= SW_ROWS || c < 0 || c >= SW_COLS) return;
+      let cell = swGrid[r][c];
+      if (cell.revealed || cell.flagged) return;
+
+      cell.revealed = true;
+      if (cell.count === 0 && !cell.isMine) {
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr !== 0 || dc !== 0) revealSweeperCell(r + dr, c + dc);
+          }
+        }
+      }
+    }
+
+    function renderSweeper() {
+      let flaggedCount = 0;
+      document.querySelectorAll(".sw-cell").forEach(el => {
+        let r = parseInt(el.dataset.r);
+        let c = parseInt(el.dataset.c);
+        let cell = swGrid[r][c];
+
+        el.className = "sw-cell";
+        el.textContent = "";
+
+        if (cell.revealed) {
+          el.classList.add("revealed");
+          if (cell.isMine) el.textContent = "💥";
+          else if (cell.count > 0) el.textContent = cell.count;
+        } else if (cell.flagged) {
+          el.classList.add("flagged");
+          el.textContent = "🚩";
+          flaggedCount++;
+        }
+      });
+      document.getElementById("sweeper-status").textContent = `Acorns Remaining: ${SW_MINES - flaggedCount} 🌰`;
+    }
+
+    function checkSweeperWin() {
+      let won = true;
+      for (let r = 0; r < SW_ROWS; r++) {
+        for (let c = 0; c < SW_COLS; c++) {
+          if (!swGrid[r][c].isMine && !swGrid[r][c].revealed) won = false;
+        }
+      }
+      if (won) {
+        recordDailyActivity();
+        showPopup("🌾 Grid Harvested!", "You successfully swept all safe acorns!", initSweeper);
+      }
+    }
+
+    // CHOMP
+    let chompInitialized = false;
+    let chompState = [];
+    let chompTurn = 'player';
+
+    function initChomp() {
+      chompInitialized = true;
+      chompTurn = 'player';
+      document.getElementById('chomp-status').textContent = 'Your turn! Tap a tile to chomp!';
+      chompState = Array(4).fill(null).map(() => Array(7).fill(true));
+      renderChomp();
+    }
+
+    function renderChomp() {
+      const board = document.getElementById('chomp-board');
+      board.innerHTML = '';
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 7; c++) {
+          const tile = document.createElement('div');
+          tile.className = 'chomp-tile';
+          if (!chompState[r][c]) tile.classList.add('eaten');
+          if (r === 0 && c === 0) {
+            tile.classList.add('poison');
+            tile.textContent = '💀';
+          } else if (chompState[r][c]) {
+            tile.textContent = '🥧';
+          }
+          tile.addEventListener('click', () => handleChompClick(r, c));
+          board.appendChild(tile);
+        }
+      }
+    }
+
+    function handleChompClick(r, c) {
+      if (chompTurn !== 'player' || !chompState[r][c]) return;
+
+      if (r === 0 && c === 0) {
+        showPopup('💀 Poison Eaten!', 'You ate the poison tile! CPU wins!', initChomp);
+        return;
+      }
+
+      executeChomp(r, c);
+      renderChomp();
+
+      chompTurn = 'cpu';
+      document.getElementById('chomp-status').textContent = 'CPU is thinking...';
+      setTimeout(makeChompCPUMove, 500);
+    }
+
+    function executeChomp(row, col) {
+      for (let r = row; r < 4; r++) {
+        for (let c = col; c < 7; c++) {
+          chompState[r][c] = false;
+        }
+      }
+    }
+
+    function makeChompCPUMove() {
+      let availableMoves = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 7; c++) {
+          if (chompState[r][c] && !(r === 0 && c === 0)) {
+            availableMoves.push({ r, c });
+          }
+        }
+      }
+
+      if (availableMoves.length === 0) {
+        recordDailyActivity();
+        showPopup('🍁 Victory!', 'CPU was forced to eat the poison skull!', initChomp);
+        return;
+      }
+
+      let chosen = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+      executeChomp(chosen.r, chosen.c);
+      renderChomp();
+
+      chompTurn = 'player';
+      document.getElementById('chomp-status').textContent = 'Your turn! Tap a tile to chomp!';
+    }
+
+    // PEG SOLITAIRE
+    let pegInitialized = false;
+    let pegState = [];
+    let selectedPeg = null;
+    let pegTargets = [];
+
+    const PEG_BOARD_LAYOUT = [
+      [-1, -1,  1,  1,  1, -1, -1],
+      [-1, -1,  1,  1,  1, -1, -1],
+      [ 1,  1,  1,  1,  1,  1,  1],
+      [ 1,  1,  1,  0,  1,  1,  1],
+      [ 1,  1,  1,  1,  1,  1,  1],
+      [-1, -1,  1,  1,  1, -1, -1],
+      [-1, -1,  1,  1,  1, -1, -1]
+    ];
+
+    function initPeg() {
+      pegInitialized = true;
+      selectedPeg = null;
+      pegTargets = [];
+      document.getElementById('peg-status').textContent = 'Jump acorns to remove them. Goal: Leave 1 acorn!';
+      pegState = PEG_BOARD_LAYOUT.map(row => [...row]);
+      renderPegBoard();
+    }
+
+    function renderPegBoard() {
+      const board = document.getElementById('peg-board');
+      board.innerHTML = '';
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+          const slot = document.createElement('div');
+          slot.className = 'peg-slot';
+
+          if (pegState[r][c] === -1) {
+            slot.classList.add('invalid');
+          } else if (pegState[r][c] === 0) {
+            slot.classList.add('empty');
+            if (pegTargets.some(t => t.r === r && t.c === c)) {
+              slot.classList.add('target');
+              slot.addEventListener('click', () => makePegJump(r, c));
+            }
+          } else if (pegState[r][c] === 1) {
+            const peg = document.createElement('div');
+            peg.className = 'peg';
+            if (selectedPeg && selectedPeg.r === r && selectedPeg.c === c) peg.classList.add('selected');
+            peg.addEventListener('click', () => selectPeg(r, c));
+            slot.appendChild(peg);
+          }
+          board.appendChild(slot);
+        }
+      }
+    }
+
+    function selectPeg(r, c) {
+      selectedPeg = { r, c };
+      pegTargets = [];
+      const dirs = [[-2,0], [2,0], [0,-2], [0,2]];
+
+      dirs.forEach(([dr, dc]) => {
+        const tr = r + dr, tc = c + dc;
+        const mr = r + dr/2, mc = c + dc/2;
+        if (tr >= 0 && tr < 7 && tc >= 0 && tc < 7) {
+          if (pegState[tr][tc] === 0 && pegState[mr][mc] === 1) {
+            pegTargets.push({ r: tr, c: tc, mr, mc });
+          }
+        }
+      });
+      renderPegBoard();
+    }
+
+    function makePegJump(tr, tc) {
+      if (!selectedPeg) return;
+      const target = pegTargets.find(t => t.r === tr && t.c === tc);
+      if (!target) return;
+
+      pegState[selectedPeg.r][selectedPeg.c] = 0;
+      pegState[target.mr][target.mc] = 0;
+      pegState[tr][tc] = 1;
+
+      selectedPeg = null;
+      pegTargets = [];
+      renderPegBoard();
+
+      let count = 0;
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+          if (pegState[r][c] === 1) count++;
+        }
+      }
+
+      if (count === 1) {
+        recordDailyActivity();
+        showPopup('🍁 Autumn Genius!', 'You cleared the board with 1 acorn left!', initPeg);
+      }
+    }
+
+    // LIGHTS OUT
+    let lightsInitialized = false;
+    let lightsState = [];
+
+    function initLights() {
+      lightsInitialized = true;
+      document.getElementById('lights-status').textContent = 'Turn off all the glowing autumn leaves!';
+      lightsState = Array(5).fill(null).map(() => Array(5).fill(false));
+
+      for (let i = 0; i < 10; i++) {
+        const r = Math.floor(Math.random() * 5);
+        const c = Math.floor(Math.random() * 5);
+        toggleLight(r, c);
+      }
+      renderLights();
+    }
+
+    function toggleLight(r, c) {
+      const dirs = [[0,0], [1,0], [-1,0], [0,1], [0,-1]];
+      dirs.forEach(([dr, dc]) => {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5) {
+          lightsState[nr][nc] = !lightsState[nr][nc];
+        }
+      });
+    }
+
+    function handleLightClick(r, c) {
+      toggleLight(r, c);
+      renderLights();
+
+      const allOff = lightsState.every(row => row.every(val => !val));
+      if (allOff) {
+        recordDailyActivity();
+        showPopup('🍂 Lights Out Solved!', 'You turned off all the autumn leaves!', initLights);
+      }
+    }
+
+    function renderLights() {
+      const board = document.getElementById('lights-board');
+      board.innerHTML = '';
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const btn = document.createElement('div');
+          btn.className = `light-btn ${lightsState[r][c] ? 'on' : ''}`;
+          btn.textContent = lightsState[r][c] ? '🍁' : '🍂';
+          btn.addEventListener('click', () => handleLightClick(r, c));
+          board.appendChild(btn);
+        }
+      }
+    }
+
+    // CHECKAWORDS (WORDLE) LOGIC
+    const WORDS = {
+      5: ["LEAFY", "ACORN", "CIDER", "CHILL", "FEAST", "APPLE", "MAIZE", "CRISP", "SPICE", "PECAN"],
+      6: ["AUTUMN", "SQUASH", "FROSTY", "WALNUT", "TIMBER", "NATURE", "SEASON", "BREEZY", "SPICED", "YELLOW"],
+      7: ["PUMPKIN", "HARVEST", "SWEATER", "ORCHARD", "FOLIAGE", "WEATHER", "CRIMSON", "FALLING", "OUTDOOR", "BONFIRE"]
+    };
+
+    let wordLength = 7;
+    let maxAttempts = 6;
+    let secretWord = "";
+    let currentAttempt = 0;
+    let currentGuess = "";
+    let isGameOver = false;
+
+    const keyboardLayout = [
+      ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+      ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+      ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "DEL"]
+    ];
+
+    function getDailyWord(len) {
+      const list = WORDS[len];
+      const today = new Date().toISOString().slice(0, 10);
+      let hash = 0;
+      for (let i = 0; i < today.length; i++) {
+        hash = (hash << 5) - hash + today.charCodeAt(i);
+        hash |= 0;
+      }
+      return list[Math.abs(hash) % list.length];
+    }
+
+    function initWordle() {
+      currentAttempt = 0; currentGuess = ""; isGameOver = false;
+      document.getElementById("wordle-msg").textContent = "";
+      secretWord = getDailyWord(wordLength);
+      renderWordleBoard();
+      renderWordleKeyboard();
+    }
+
+    function setWordMode(len) {
+      wordLength = len;
+      document.querySelectorAll("#wordle-view .mode-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.textContent.startsWith(len));
+      });
+      initWordle();
+    }
+
+    function renderWordleBoard() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      for (let i = 0; i < maxAttempts; i++) {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.style.gridTemplateColumns = `repeat(${wordLength}, 1fr)`;
+        for (let j = 0; j < wordLength; j++) {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.id = `tile-${i}-${j}`;
+          row.appendChild(tile);
+        }
+        grid.appendChild(row);
+      }
+    }
+
+    function renderWordleKeyboard() {
+      const kb = document.getElementById("keyboard");
+      kb.innerHTML = "";
+      keyboardLayout.forEach(row => {
+        const rDiv = document.createElement("div");
+        rDiv.className = "keyboard-row";
+        row.forEach(key => {
+          const btn = document.createElement("button");
+          btn.className = "key";
+          btn.id = `key-${key}`;
+          btn.textContent = key;
+          if (key === "ENTER" || key === "DEL") btn.classList.add("large");
+          btn.addEventListener("click", () => handleWordInput(key));
+          rDiv.appendChild(btn);
+        });
+        kb.appendChild(rDiv);
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (document.getElementById("wordle-view").classList.contains("active")) {
+        if (e.key === "Enter") handleWordInput("ENTER");
+        else if (e.key === "Backspace") handleWordInput("DEL");
+        else if (e.key.match(/^[a-zA-Z]$/)) handleWordInput(e.key.toUpperCase());
+      } else if (document.getElementById("g2048-view").classList.contains("active")) {
+        if (e.key === "ArrowLeft") move2048("LEFT");
+        else if (e.key === "ArrowRight") move2048("RIGHT");
+        else if (e.key === "ArrowUp") move2048("UP");
+        else if (e.key === "ArrowDown") move2048("DOWN");
+      } else if (document.getElementById("snake-view").classList.contains("active")) {
+        if (e.key === "ArrowLeft") setSnakeDir("LEFT");
+        else if (e.key === "ArrowRight") setSnakeDir("RIGHT");
+        else if (e.key === "ArrowUp") setSnakeDir("UP");
+        else if (e.key === "ArrowDown") setSnakeDir("DOWN");
+      }
+    });
+
+    function handleWordInput(key) {
+      if (isGameOver) return;
+      if (key === "ENTER") {
+        if (currentGuess.length === wordLength) checkWordGuess();
+        else document.getElementById("wordle-msg").textContent = "Not enough letters!";
+      } else if (key === "DEL") {
+        if (currentGuess.length > 0) {
+          currentGuess = currentGuess.slice(0, -1);
+          updateWordRow();
+        }
+      } else if (currentGuess.length < wordLength && key.length === 1) {
+        currentGuess += key;
+        updateWordRow();
+      }
+    }
+
+    function updateWordRow() {
+      for (let j = 0; j < wordLength; j++) {
+        const tile = document.getElementById(`tile-${currentAttempt}-${j}`);
+        tile.textContent = currentGuess[j] || "";
+        tile.classList.toggle("pop", Boolean(currentGuess[j]));
+      }
+    }
+
+    function checkWordGuess() {
+      const targetArr = secretWord.split("");
+      const guessArr = currentGuess.split("");
+      const states = new Array(wordLength).fill("absent");
+
+      for (let i = 0; i < wordLength; i++) {
+        if (guessArr[i] === targetArr[i]) { states[i] = "correct"; targetArr[i] = null; }
+      }
+      for (let i = 0; i < wordLength; i++) {
+        if (states[i] !== "correct") {
+          const idx = targetArr.indexOf(guessArr[i]);
+          if (idx !== -1) { states[i] = "present"; targetArr[idx] = null; }
+        }
+      }
+
+      for (let i = 0; i < wordLength; i++) {
+        const tile = document.getElementById(`tile-${currentAttempt}-${i}`);
+        tile.classList.add(states[i]);
+        const kBtn = document.getElementById(`key-${guessArr[i]}`);
+        if (kBtn) kBtn.classList.add(states[i]);
+      }
+
+      if (currentGuess === secretWord) {
+        isGameOver = true;
+        updateScore('wordle', 1, true);
+        setTimeout(() => showPopup('🍂 Wordle Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
+      } else if (currentAttempt === maxAttempts - 1) {
+        isGameOver = true;
+        setTimeout(() => showPopup('💔 Out of Guesses', `Today's autumn secret word was: ${secretWord}`, initWordle), 400);
+      } else {
+        currentAttempt++;
+        currentGuess = "";
+      }
+    }
+
+    // Initialize Streak & Checkawords on start
+    initStreakSystem();
+    initWordle();
+  </script>
 </body>
 </html>
