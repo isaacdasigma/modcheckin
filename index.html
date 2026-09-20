@@ -2138,7 +2138,7 @@
       if (currentGuess === secretWord) {
         isGameOver = true;
         updateScore('wordle', 1, true);
-        setTimeout(() => showPopup('🍂 Wordle Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
+        setTimeout(() => showPopup('🍂 checkawords Victory!', `You correctly guessed "${secretWord}"!`, initWordle), 400);
       } else if (currentAttempt === maxAttempts - 1) {
         isGameOver = true;
         setTimeout(() => showPopup('💔 Out of Guesses', `Today's autumn secret word was: ${secretWord}`, initWordle), 400);
