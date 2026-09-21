@@ -36,6 +36,27 @@
     <button class="nav-btn" onclick="switchTab('chomp')">Chomp</button>
     <button class="nav-btn" onclick="switchTab('peg')">Peg Solitaire</button>
     <button class="nav-btn" onclick="switchTab('lights')">Lights Out</button>
+    <button class="nav-btn" onclick="switchTab('about')">👤 About Me</button>
+  </div>
+
+  <!-- ABOUT ME SECTION -->
+  <div id="about-view" class="game-view">
+    <h2>About Me</h2>
+    <p>Welcome to Checkawords Autumn Harvest! I am a developer who enjoys building fun, interactive web games and utility applications.</p>
+    
+    <hr>
+
+    <h3>My Hobbies & Interests</h3>
+    <ul>
+      <li>Game Design & Web Development</li>
+      <li>Puzzle Solving & Logic Games</li>
+      <li>Creating Fun Interactive Experiences</li>
+    </ul>
+
+    <hr>
+
+    <h3>Get in Touch</h3>
+    <p>Thanks for visiting and playing! Feel free to share your high scores and feedback.</p>
   </div>
 
   <!-- GAME 1: CHECKAWORDS -->
@@ -362,7 +383,10 @@
       document.querySelectorAll('.game-view').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
 
-      if (gameKey === 'wordle') {
+      if (gameKey === 'about') {
+        document.getElementById('about-view').classList.add('active');
+        event.target.classList.add('active');
+      } else if (gameKey === 'wordle') {
         document.getElementById('wordle-view').classList.add('active');
         event.target.classList.add('active');
       } else if (gameKey === 'leaderboard') {
@@ -1725,7 +1749,7 @@
         currentGuess = "";
       }
     }
-
+    
     // Initialize Streak & Checkawords on start
     initStreakSystem();
     initWordle();
